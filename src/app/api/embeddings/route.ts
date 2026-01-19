@@ -91,7 +91,6 @@ export async function POST(request: NextRequest) {
           const embedding = await generateEmbedding(textToEmbed);
 
           // Store embedding directly
-          // @ts-expect-error - Supabase types not fully configured
           const { error: updateError } = await supabase
             .from('knowledge_items')
             .update({ embedding: embedding as unknown as string })
@@ -108,7 +107,6 @@ export async function POST(request: NextRequest) {
       }
 
       // Get remaining count
-      // @ts-expect-error - Supabase types not fully configured
       const { count } = await supabase
         .from('knowledge_items')
         .select('id', { count: 'exact', head: true })
