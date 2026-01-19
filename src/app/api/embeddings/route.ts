@@ -91,8 +91,8 @@ export async function POST(request: NextRequest) {
           const embedding = await generateEmbedding(textToEmbed);
 
           // Store embedding directly
-          const { error: updateError } = await supabase
-            .from('knowledge_items')
+          const { error: updateError } = await (supabase
+            .from('knowledge_items') as any)
             .update({ embedding: embedding as unknown as string })
             .eq('id', item.id);
 
