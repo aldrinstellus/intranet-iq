@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         .from('knowledge_items')
         .select('id, title, content, summary, source_table')
         .is('embedding', null)
-        .limit(limit);
+        .limit(limit) as { data: Array<{ id: string; title: string | null; content: string | null; summary: string | null; source_table: string | null }> | null; error: any };
 
       if (error) {
         console.error('Failed to fetch knowledge items:', error);
