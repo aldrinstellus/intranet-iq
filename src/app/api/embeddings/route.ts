@@ -127,7 +127,11 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         // Fallback: try to create the function
-        await supabase.rpc('create_get_articles_function').catch(() => {});
+        try {
+          await supabase.rpc('create_get_articles_function');
+        } catch {
+          // Ignore error
+        }
 
         // Just return an empty result
         return NextResponse.json({
