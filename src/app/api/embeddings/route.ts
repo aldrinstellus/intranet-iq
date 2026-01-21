@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     // Batch generate embeddings for all articles without embeddings
     if (action === 'batch_articles') {
       // Use direct SQL since diq schema might not be exposed
-      const { data: articles, error } = await supabase.rpc('get_articles_without_embeddings');
+      const { data: articles, error } = await supabase.rpc('get_articles_without_embeddings') as { data: Array<{ id: string; title: string; summary: string | null; content: string | null }> | null; error: any };
 
       if (error) {
         // Fallback: try to create the function
