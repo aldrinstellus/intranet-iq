@@ -120,11 +120,11 @@ export default function Dashboard() {
                   </Link>
                 </StaggerItem>
                 <StaggerItem>
-                  <Link href="/people">
+                  <Link href="/news">
                     <QuickActionCard
-                      icon={<Users className="w-5 h-5" />}
+                      icon={<Newspaper className="w-5 h-5" />}
                       title="Team Updates"
-                      description="See what your team is working on"
+                      description="Latest company news and announcements"
                       color="gold"
                     />
                   </Link>

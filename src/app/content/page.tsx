@@ -337,117 +337,117 @@ function ContentPageInner() {
 
       <main className="ml-16 h-screen flex">
         {/* Left Panel - Tree View */}
-        <FadeIn className="w-80 border-r border-[var(--border-subtle)] flex flex-col bg-[var(--bg-charcoal)]">
+        <FadeIn className="w-80 border-r border-[var(--border-subtle)] flex flex-col bg-[var(--bg-charcoal)] flex-shrink-0 overflow-hidden">
           {/* Header */}
           <div className="p-4 border-b border-[var(--border-subtle)]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h2 className="text-lg font-medium text-[var(--text-primary)] flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-[var(--accent-ember)]" />
-                  {viewMode === "recent" ? "Recent Documents" : "Knowledge Base"}
-                </h2>
-                {/* View Mode Toggle */}
-                <div className="flex items-center gap-1 bg-[var(--bg-slate)] rounded-lg p-0.5">
-                  <motion.button
-                    onClick={() => setViewMode("browse")}
-                    className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                      viewMode === "browse"
-                        ? "bg-[var(--accent-ember)] text-white"
-                        : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Browse
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setViewMode("recent")}
-                    className={`px-2 py-1 text-xs rounded-md transition-colors flex items-center gap-1 ${
-                      viewMode === "recent"
-                        ? "bg-[var(--accent-ember)] text-white"
-                        : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Clock className="w-3 h-3" />
-                    Recent
-                  </motion.button>
-                </div>
-              </div>
+            {/* Title Row */}
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[var(--accent-ember)] flex-shrink-0" />
+                <h2 className="text-sm font-medium text-[var(--text-primary)]">
+                  {viewMode === "recent" ? "Recent" : "Knowledge Base"}
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <motion.button
                   onClick={() => setShowApprovalPanel(true)}
-                  className="p-2 rounded-lg bg-[var(--warning)]/20 border border-[var(--warning)]/30 hover:bg-[var(--warning)]/30 text-[var(--warning)] transition-colors"
+                  className="p-1.5 rounded-lg bg-[var(--warning)]/20 border border-[var(--warning)]/30 hover:bg-[var(--warning)]/30 text-[var(--warning)] transition-colors"
                   title="Pending Approvals"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <ClipboardCheck className="w-4 h-4" />
+                  <ClipboardCheck className="w-3.5 h-3.5" />
                 </motion.button>
                 <div className="relative">
-                <motion.button
-                  onClick={() => setShowNewMenu(!showNewMenu)}
-                  className="p-2 rounded-lg bg-[var(--accent-ember)] hover:bg-[var(--accent-ember-soft)] text-white transition-colors shadow-lg shadow-[var(--accent-ember)]/20"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Plus className="w-4 h-4" />
-                </motion.button>
-                <AnimatePresence>
-                  {showNewMenu && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setShowNewMenu(false)} />
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute right-0 top-10 w-48 bg-[var(--bg-charcoal)] border border-[var(--border-default)] rounded-lg shadow-xl z-50"
-                      >
-                        <button
-                          onClick={() => {
-                            setShowNewMenu(false);
-                            setShowCreateModal("category");
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)]"
+                  <motion.button
+                    onClick={() => setShowNewMenu(!showNewMenu)}
+                    className="p-1.5 rounded-lg bg-[var(--accent-ember)] hover:bg-[var(--accent-ember-soft)] text-white transition-colors"
+                    title="Create New"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </motion.button>
+                  <AnimatePresence>
+                    {showNewMenu && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setShowNewMenu(false)} />
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="absolute right-0 top-9 w-44 bg-[var(--bg-charcoal)] border border-[var(--border-default)] rounded-lg shadow-xl z-50 overflow-hidden"
                         >
-                          <FolderOpen className="w-4 h-4" />
-                          New Category
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowNewMenu(false);
-                            setShowCreateModal("article");
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)]"
-                        >
-                          <FileText className="w-4 h-4" />
-                          New Article
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowNewMenu(false);
-                            // In production, open file upload dialog
-                            const input = document.createElement("input");
-                            input.type = "file";
-                            input.accept = ".pdf,.doc,.docx,.txt,.md";
-                            input.onchange = (e) => {
-                              const file = (e.target as HTMLInputElement).files?.[0];
-                              if (file) console.log("Uploading file:", file.name);
-                            };
-                            input.click();
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)]"
-                        >
-                          <File className="w-4 h-4" />
-                          Upload File
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
+                          <button
+                            onClick={() => {
+                              setShowNewMenu(false);
+                              setShowCreateModal("category");
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)] transition-colors"
+                          >
+                            <FolderOpen className="w-4 h-4" />
+                            New Category
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowNewMenu(false);
+                              setShowCreateModal("article");
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)] transition-colors"
+                          >
+                            <FileText className="w-4 h-4" />
+                            New Article
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowNewMenu(false);
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.accept = ".pdf,.doc,.docx,.txt,.md";
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
+                                if (file) console.log("Uploading file:", file.name);
+                              };
+                              input.click();
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-slate)] hover:text-[var(--text-primary)] transition-colors"
+                          >
+                            <File className="w-4 h-4" />
+                            Upload File
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
-              </div>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-[var(--bg-slate)] rounded-lg p-0.5 mb-3">
+              <motion.button
+                onClick={() => setViewMode("browse")}
+                className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
+                  viewMode === "browse"
+                    ? "bg-[var(--accent-ember)] text-white"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+                whileTap={{ scale: 0.98 }}
+              >
+                Browse
+              </motion.button>
+              <motion.button
+                onClick={() => setViewMode("recent")}
+                className={`flex-1 px-3 py-1.5 text-xs rounded-md transition-colors flex items-center justify-center gap-1 ${
+                  viewMode === "recent"
+                    ? "bg-[var(--accent-ember)] text-white"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Clock className="w-3 h-3" />
+                Recent
+              </motion.button>
             </div>
 
             {/* Search */}
@@ -457,8 +457,8 @@ function ContentPageInner() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search knowledge base..."
-                className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg pl-9 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-[var(--accent-ember)]/50 focus:shadow-lg focus:shadow-[var(--accent-ember)]/5 transition-all"
+                placeholder="Search..."
+                className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg pl-9 pr-4 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-[var(--accent-ember)]/50 transition-all"
               />
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FadeIn, StaggerContainer, StaggerItem, ScaleOnHover } from "@/lib/motion";
@@ -74,22 +74,43 @@ export default function PeoplePage() {
 
   const loading = deptLoading || empLoading;
 
-  // Transform employees with user data
-  const transformedEmployees = employees.map((emp: any) => ({
-    id: emp.id,
-    name: emp.user?.full_name || "Unknown",
-    title: emp.job_title || "Employee",
-    department: emp.department?.name || "General",
-    departmentId: emp.department_id,
-    location: emp.location || "Remote",
-    email: emp.user?.email || "",
-    phone: emp.phone || "",
-    avatar: (emp.user?.full_name || "U").split(" ").map((n: string) => n[0]).join("").toUpperCase(),
-    status: employeeStatuses[emp.id] || "offline",
-    manager: emp.manager_id,
-    managerId: emp.manager_id,
-    skills: emp.skills || [],
-  }));
+  // Transform employees with user data - MEMOIZED
+  const transformedEmployees = useMemo(() =>
+    employees.map((emp: any) => ({
+      id: emp.id,
+      name: emp.user?.full_name || "Unknown",
+      title: emp.job_title || "Employee",
+      department: emp.department?.name || "General",
+      departmentId: emp.department_id,
+      location: emp.location || "Remote",
+      email: emp.user?.email || "",
+      phone: emp.phone || "",
+      avatar: (emp.user?.full_name || "U").split(" ").map((n: string) => n[0]).join("").toUpperCase(),
+      status: employeeStatuses[emp.id] || "offline",
+      manager: emp.manager_id,
+      managerId: emp.manager_id,
+      skills: emp.skills || [],
+    })),
+    [employees, employeeStatuses]
+  );
+
+  // Create lookup maps for O(1) child finding - PERFORMANCE OPTIMIZATION
+  const { childrenByManager, ceo } = useMemo(() => {
+    const childrenMap = new Map<string, any[]>();
+    let ceoNode: any = null;
+
+    for (const person of transformedEmployees) {
+      if (!person.managerId) {
+        ceoNode = person;
+      } else {
+        const children = childrenMap.get(person.managerId) || [];
+        children.push(person);
+        childrenMap.set(person.managerId, children);
+      }
+    }
+
+    return { childrenByManager: childrenMap, ceo: ceoNode };
+  }, [transformedEmployees]);
 
   const filteredPeople = transformedEmployees.filter((person: any) => {
     const matchesSearch =
@@ -113,19 +134,18 @@ export default function PeoplePage() {
     });
   };
 
-  const buildOrgTree = () => {
-    const ceo = transformedEmployees.find((p: any) => !p.managerId);
+  // Build org tree using O(1) lookup - MEMOIZED
+  const buildOrgTree = useMemo(() => {
     if (!ceo) return null;
 
     const buildNode = (person: any): any => {
-      const children = transformedEmployees
-        .filter((p: any) => p.managerId === person.id)
-        .map(buildNode);
+      // O(1) lookup instead of O(n) filter
+      const children = (childrenByManager.get(person.id) || []).map(buildNode);
       return { person, children, expanded: expandedNodes.has(person.id) };
     };
 
     return buildNode(ceo);
-  };
+  }, [ceo, childrenByManager, expandedNodes]);
 
   const renderOrgNode = (node: any, level: number = 0) => {
     const hasChildren = node.children.length > 0;
@@ -208,7 +228,7 @@ export default function PeoplePage() {
     );
   };
 
-  const orgTree = buildOrgTree();
+  const orgTree = buildOrgTree;
 
   return (
     <div className="min-h-screen bg-[var(--bg-obsidian)]">
