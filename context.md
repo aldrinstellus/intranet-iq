@@ -6,6 +6,63 @@
 
 This document contains design specifications, UI/UX guidelines, and brand identity details for **dIQ (Intranet IQ)** - the AI-powered internal knowledge network.
 
+**Version:** 0.7.0
+**Design System:** Midnight Ember
+**Last Updated:** January 21, 2026
+
+---
+
+## DESIGN SYSTEM: MIDNIGHT EMBER
+
+### Overview
+Midnight Ember is a warm, distinctive dark theme that avoids the generic "AI-generated" blue/purple aesthetic. It features:
+- Deep obsidian backgrounds
+- Warm ember/orange accent colors
+- Gold highlights for emphasis
+- Subtle animations throughout
+- WCAG 2.1 AA compliant contrast ratios
+
+### Color Palette
+
+#### Backgrounds
+| Token | Hex | RGB | Usage |
+|-------|-----|-----|-------|
+| `--bg-obsidian` | #08080c | 8, 8, 12 | Primary page background |
+| `--bg-charcoal` | #121218 | 18, 18, 24 | Cards, elevated surfaces |
+| `--bg-slate` | #1c1c24 | 28, 28, 36 | Inputs, hover states |
+| `--bg-elevated` | #252530 | 37, 37, 48 | Modals, dropdowns |
+
+#### Borders
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--border-subtle` | rgba(255,255,255,0.06) | Subtle separators |
+| `--border-default` | rgba(255,255,255,0.12) | Default borders |
+| `--border-strong` | rgba(255,255,255,0.20) | Emphasized borders |
+
+#### Accent Colors (Ember Palette)
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--accent-ember` | #f97316 | Primary accent (buttons, links) |
+| `--accent-ember-soft` | #fb923c | Hover states |
+| `--accent-copper` | #ea580c | Active/pressed states |
+| `--accent-gold` | #fbbf24 | Highlights, badges, emphasis |
+
+#### Semantic Colors
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--success` | #22c55e | Success states |
+| `--warning` | #eab308 | Warning states |
+| `--error` | #ef4444 | Error states |
+| `--info` | #3b82f6 | Informational |
+
+#### Text Colors
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--text-primary` | #fafafa | Headings, primary text |
+| `--text-secondary` | rgba(250,250,250,0.7) | Body text |
+| `--text-muted` | rgba(250,250,250,0.5) | Helper text, timestamps |
+| `--text-disabled` | rgba(250,250,250,0.3) | Disabled states |
+
 ---
 
 ## dIQ BRAND IDENTITY
@@ -15,28 +72,28 @@ This document contains design specifications, UI/UX guidelines, and brand identi
 **Standard Format for all Digital Workplace products:**
 ```
 Bold letter + regular suffix + dot (all on same baseline)
-─────────────────────────────────────────────────────────
-dIQ·  → Digital Intranet IQ
-dSQ·  → Digital Support IQ
-dTQ·  → Digital Test Pilot IQ
-dCQ·  → Digital Chat Core IQ
+---------------------------------------------------------
+dIQ·  -> Digital Intranet IQ
+dSQ·  -> Digital Support IQ
+dTQ·  -> Digital Test Pilot IQ
+dCQ·  -> Digital Chat Core IQ
 ```
 
 ### Logo Specifications (Official Standard)
 
 ```
-┌─────────────────────────────────────┐
-│                                     │
-│    d I Q ·                          │
-│    ↑ ↑ ↑ ↑                          │
-│    │ │ │ └── Blue dot (#60a5fa)     │
-│    │ │ └──── Q (regular, 85% opacity)│
-│    │ └────── I (regular, 85% opacity)│
-│    └──────── d (bold, 100% opacity)  │
-│                                     │
-│    ALL ON SAME BASELINE             │
-│                                     │
-└─────────────────────────────────────┘
++-------------------------------------+
+|                                     |
+|    d I Q .                          |
+|    ^ ^ ^ ^                          |
+|    | | | +-- Orange dot (#f97316)   |
+|    | | +---- Q (regular, 85% opacity)|
+|    | +------ I (regular, 85% opacity)|
+|    +-------- d (bold, 100% opacity)  |
+|                                     |
+|    ALL ON SAME BASELINE             |
+|                                     |
++-------------------------------------+
 ```
 
 | Property | Value |
@@ -44,11 +101,11 @@ dCQ·  → Digital Chat Core IQ
 | **"d"** | Bold (fontWeight 700), 100% opacity |
 | **"I"** | Regular (fontWeight 400), 85% opacity |
 | **"Q"** | Regular (fontWeight 400), 85% opacity |
-| **Dot** | Blue circle (#60a5fa) with glow |
+| **Dot** | Orange circle (#f97316) with glow |
 | **Alignment** | All elements on same baseline |
-| **Background** | Blue-purple gradient |
+| **Background** | Ember gradient or transparent |
 | **Font** | ui-monospace, SF Mono, Menlo, Monaco, Consolas |
-| **Animation** | Glitch effect (4s interval) |
+| **Animation** | Subtle pulse effect |
 | **Rendering** | SVG-based for pixel-perfect alignment |
 
 ### SVG Implementation
@@ -57,7 +114,7 @@ dCQ·  → Digital Chat Core IQ
   <text x="0" y="14" fill="white" fontSize="18" fontWeight="700">d</text>
   <text x="11" y="14" fill="white" fillOpacity="0.85" fontSize="10" fontWeight="400">I</text>
   <text x="16.5" y="14" fill="white" fillOpacity="0.85" fontSize="10" fontWeight="400">Q</text>
-  <circle cx="27" cy="13" r="2.5" fill="#60a5fa" />
+  <circle cx="27" cy="13" r="2.5" fill="#f97316" />
 </svg>
 ```
 
@@ -71,7 +128,7 @@ dCQ·  → Digital Chat Core IQ
 
 ### Favicon
 - **Design:** "d." with green dot (matches Digital Workplace AI)
-- **Background:** Dark (#0f0f1a)
+- **Background:** Dark (#08080c)
 - **Dot Color:** Green (#4ade80)
 - **Size:** 32x32 (browser), 180x180 (Apple)
 - **File:** `src/app/icon.tsx` (dynamic generation)
@@ -83,70 +140,18 @@ dCQ·  → Digital Chat Core IQ
 
 ---
 
-## DESIGN PHILOSOPHY
+## TYPOGRAPHY
 
-### Core Principles
-1. **Intelligence First** - AI assistance is always accessible
-2. **Instant Discovery** - Search is the primary interaction
-3. **Contextual Awareness** - UI adapts to user role and context
-4. **Standalone Identity** - Clear dIQ branding, separate from main app
-
-### User Experience Goals
-- Zero-training adoption
-- Sub-second search responses
-- Conversational AI interactions
-- Mobile-first responsiveness
-
----
-
-## VISUAL DESIGN SYSTEM
-
-### Color Palette
-
-#### Primary Colors (Blue Theme)
-| Name | Hex | RGB | Usage |
-|------|-----|-----|-------|
-| Background Dark | #0a0a0f | 10, 10, 15 | Main page background |
-| Background Card | #0f0f14 | 15, 15, 20 | Cards, sidebar, panels |
-| Background Input | #1a1a1f | 26, 26, 31 | Input fields, search bars |
-| Background Hover | #252530 | 37, 37, 48 | Hover states |
-
-#### Brand Gradient
-```css
-background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-```
-
-#### Accent Colors
-| Name | Hex | Usage |
-|------|-----|-------|
-| Primary Blue | #3b82f6 | Primary actions, links, dIQ brand |
-| Secondary Purple | #8b5cf6 | Secondary elements, gradients |
-| Accent Cyan | #06b6d4 | Highlights, badges |
-| Success Green | #22c55e | Success states |
-| Warning Amber | #f59e0b | Warnings |
-| Error Red | #ef4444 | Errors |
-| Blue Dot | #60a5fa | Logo indicator dot |
-
-#### Text Colors
-| Name | Value | Usage |
-|------|-------|-------|
-| Text Primary | white | Headings, primary text |
-| Text Secondary | rgba(255,255,255,0.7) | Body text |
-| Text Muted | rgba(255,255,255,0.5) | Helper text, timestamps |
-| Text Disabled | rgba(255,255,255,0.3) | Disabled states |
-
-### Typography
-
-#### Font Stack
+### Font Stack
 ```css
 /* Primary */
 font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 /* Brand/Code */
-font-family: 'JetBrains Mono', 'Fira Code', monospace;
+font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
 ```
 
-#### Type Scale
+### Type Scale
 | Element | Size | Weight | Line Height |
 |---------|------|--------|-------------|
 | H1 | 36px | 700 | 1.2 |
@@ -157,7 +162,10 @@ font-family: 'JetBrains Mono', 'Fira Code', monospace;
 | Small | 14px | 400 | 1.5 |
 | Caption | 12px | 400 | 1.4 |
 
-### Spacing System
+---
+
+## SPACING SYSTEM
+
 | Name | Value | Usage |
 |------|-------|-------|
 | xs | 4px | Tight spacing |
@@ -167,7 +175,10 @@ font-family: 'JetBrains Mono', 'Fira Code', monospace;
 | xl | 32px | Large sections |
 | 2xl | 48px | Page margins |
 
-### Border Radius
+---
+
+## BORDER RADIUS
+
 | Name | Value | Usage |
 |------|-------|-------|
 | sm | 6px | Buttons, inputs |
@@ -178,140 +189,149 @@ font-family: 'JetBrains Mono', 'Fira Code', monospace;
 
 ---
 
+## ANIMATION GUIDELINES
+
+### Framer Motion Integration
+All animations use Framer Motion v12 with consistent patterns.
+
+### Motion Components (`src/lib/motion.tsx`)
+```typescript
+// FadeIn - Standard entrance animation
+<FadeIn delay={0.1}>
+  <Card />
+</FadeIn>
+
+// SlideIn - Directional slide
+<SlideIn direction="left">
+  <Sidebar />
+</SlideIn>
+
+// StaggerList - Children animate in sequence
+<StaggerList staggerDelay={0.05}>
+  {items.map(item => <Item key={item.id} />)}
+</StaggerList>
+
+// ScaleOnHover - Interactive feedback
+<ScaleOnHover scale={1.02}>
+  <Button />
+</ScaleOnHover>
+```
+
+### Animation Tokens
+| Property | Value | Usage |
+|----------|-------|-------|
+| Duration (fast) | 200ms | Quick interactions |
+| Duration (normal) | 300ms | Standard transitions |
+| Duration (slow) | 500ms | Page transitions |
+| Easing | cubic-bezier(0.22, 1, 0.36, 1) | Smooth deceleration |
+| Spring stiffness | 400 | Bouncy feel |
+| Spring damping | 25 | Controlled settling |
+
+### Reduced Motion Support
+```typescript
+const prefersReducedMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)'
+).matches;
+
+// Animations respect user preference
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{
+    duration: prefersReducedMotion ? 0 : 0.3
+  }}
+/>
+```
+
+---
+
 ## COMPONENT SPECIFICATIONS
 
 ### Sidebar Navigation
 - **Width:** 64px (collapsed)
-- **Background:** #0f0f14
-- **Border:** 1px solid rgba(255,255,255,0.1)
+- **Background:** #121218
+- **Border:** 1px solid rgba(255,255,255,0.06)
 - **Icon Size:** 20px
 - **Logo:** dIQ logo at top (links to dashboard)
-- **Active State:** Blue gradient bg + left indicator bar
+- **Active State:** Ember gradient bg + left indicator bar
+- **Hover:** Subtle glow effect
 
-### Dashboard Header (Simplified)
-- **Content:** Dynamic greeting only ("Good [time], [Name]" or "Hello there")
-- **Branding:** Sidebar logo only (no redundant badges in main content)
-- **User Name:** Retrieved from Clerk authentication
+### Cards
+- **Background:** #121218
+- **Border:** 1px solid rgba(255,255,255,0.06)
+- **Border Radius:** 12px
+- **Padding:** 20px
+- **Hover:** Subtle ember glow shadow
+- **Animation:** Scale 1.01 on hover
+
+### Buttons
+| Variant | Background | Text | Border |
+|---------|------------|------|--------|
+| Primary | #f97316 | white | none |
+| Secondary | transparent | #f97316 | 1px #f97316 |
+| Ghost | transparent | #fafafa | none |
+| Danger | #ef4444 | white | none |
+
+### Inputs
+- **Background:** #1c1c24
+- **Border:** 1px solid rgba(255,255,255,0.12)
+- **Focus Border:** #f97316
+- **Focus Glow:** 0 0 0 2px rgba(249,115,22,0.2)
+- **Border Radius:** 8px
+- **Padding:** 12px 16px
 
 ### Search Bar (Hero)
 - **Height:** 56px
-- **Background:** #1a1a1f
-- **Border:** 1px solid rgba(255,255,255,0.1)
+- **Background:** #1c1c24
+- **Border:** 1px solid rgba(255,255,255,0.12)
 - **Placeholder:** "Ask anything..."
 - **Icon:** Search (left), Sparkles (right)
-
-### Quick Action Cards
-- **Background:** gradient (blue to purple)
-- **Border Radius:** 12px
-- **Padding:** 20px
-- **Icon Size:** 24px
-- **Hover:** Scale 1.02, enhanced shadow
-
-### Activity Items
-- **Avatar Size:** 40px
-- **Padding:** 16px
-- **Border Bottom:** 1px solid rgba(255,255,255,0.05)
-
-### Trending Topics
-- **Badge Style:** Pill shape
-- **Background:** rgba(59,130,246,0.2)
-- **Text Color:** #3b82f6
-- **Padding:** 8px 16px
+- **Focus:** Ember glow effect
 
 ---
 
 ## PAGE LAYOUTS
 
-### Dashboard (/dashboard)
+### Dashboard (`/diq/dashboard`)
 ```
-┌─────────────────────────────────────────────────────┐
-│ Sidebar │           Main Content Area               │
-│  64px   │                                           │
-│         │  ┌─────────────────────────────────────┐  │
-│ [dIQ]   │  │  "Hello there" or "Good afternoon,  │  │
-│         │  │   [Name]" + For you | Company       │  │
-│ [Home]  │  └─────────────────────────────────────┘  │
-│ [Chat]  │  ┌─────────────────────────────────────┐  │
-│ [Agents]│  │  Search Bar ("Ask anything...")     │  │
-│ [People]│  └─────────────────────────────────────┘  │
-│ [Content│                                           │
-│         │  ┌────────┐ ┌────────┐ ┌────────┐       │
-│ [Search]│  │ Quick  │ │ Quick  │ │ Quick  │       │
-│ [Gear]  │  │ Action │ │ Action │ │ Action │       │
-│         │  └────────┘ └────────┘ └────────┘       │
-│         │                                           │
-│         │  ┌─────────────────────────────────────┐ │
-│         │  │ Recent Activity / Trending Topics   │ │
-│         │  └─────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
-
-### Chat (/chat)
-```
-┌─────────────────────────────────────────────────────┐
-│ Sidebar │           Chat Interface                  │
-│         │                                           │
-│         │  ┌─────────────────────────────────────┐  │
-│         │  │  LLM Selector + Model Options       │  │
-│         │  └─────────────────────────────────────┘  │
-│         │  ┌─────────────────────────────────────┐  │
-│         │  │  Conversation History (scrollable)  │  │
-│         │  │                                     │  │
-│         │  │  [AI Message + Sources]             │  │
-│         │  │                    [User Message]   │  │
-│         │  │  [AI Message + Confidence Score]   │  │
-│         │  └─────────────────────────────────────┘  │
-│         │  ┌─────────────────────────────────────┐  │
-│         │  │  Input Field + Send Button          │  │
-│         │  └─────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
++---------------------------------------------------+
+| Sidebar |           Main Content Area              |
+|  64px   |                                          |
+|         |  +---------------------------------+     |
+| [dIQ]   |  |  "Good [time], [Name]"         |     |
+|         |  |  For you | Company tabs         |     |
+| [Home]  |  +---------------------------------+     |
+| [Chat]  |  +---------------------------------+     |
+| [Agents]|  |  Search Bar ("Ask anything...")  |     |
+| [People]|  +---------------------------------+     |
+| [Content|                                          |
+|         |  +-------+ +-------+ +-------+          |
+| [Search]|  | Quick | | Quick | | Quick |          |
+| [Gear]  |  | Action| | Action| | Action|          |
+|         |  +-------+ +-------+ +-------+          |
+|         |                                          |
+|         |  +---------------------------------+    |
+|         |  | Recent Activity / News Feed     |    |
+|         |  +---------------------------------+    |
++---------------------------------------------------+
 ```
 
-### People (/people)
+### Content (`/diq/content`)
 ```
-┌─────────────────────────────────────────────────────┐
-│ Sidebar │           People Directory                │
-│         │                                           │
-│         │  ┌─────────────────────────────────────┐  │
-│         │  │  Search + View Toggle (Grid/List)   │  │
-│         │  └─────────────────────────────────────┘  │
-│         │                                           │
-│         │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │
-│         │  │Person│ │Person│ │Person│ │Person│    │
-│         │  │ Card │ │ Card │ │ Card │ │ Card │    │
-│         │  └──────┘ └──────┘ └──────┘ └──────┘    │
-│         │                                           │
-│         │  ┌─────────────────────────────────────┐ │
-│         │  │ Selected Person Detail Panel        │ │
-│         │  └─────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
-## ANIMATION GUIDELINES
-
-### Transitions
-- **Duration:** 200ms (fast), 300ms (normal), 500ms (slow)
-- **Easing:** cubic-bezier(0.4, 0, 0.2, 1)
-
-### Motion Patterns
-- **Page transitions:** Fade + slide (300ms)
-- **Modal open:** Scale up from 0.95 (200ms)
-- **Sidebar toggle:** Width transition (200ms)
-- **Hover effects:** Scale 1.02 + shadow (200ms)
-
-### Logo Glitch Effect
-```typescript
-// Triggers every 4 seconds
-const triggerGlitch = () => {
-  setGlitch(true);
-  setTimeout(() => setGlitch(false), 150);
-};
-
-// Chromatic aberration effect
-// Cyan layer: translate(-1px, 0)
-// Red layer: translate(1px, 0)
++---------------------------------------------------+
+| Sidebar |           Content Browser               |
+|         |                                          |
+|         |  +-----------+---------------------+     |
+|         |  | Category  |  Article Display    |     |
+|         |  | Tree      |                     |     |
+|         |  | (left)    |  Title              |     |
+|         |  |           |  Published badge    |     |
+|         |  | Recent    |  Views / Helpful    |     |
+|         |  | Documents |                     |     |
+|         |  | (list)    |  Content preview    |     |
+|         |  |           |                     |     |
+|         |  +-----------+---------------------+     |
++---------------------------------------------------+
 ```
 
 ---
@@ -333,12 +353,18 @@ const triggerGlitch = () => {
 - WCAG 2.1 AA compliance
 - Keyboard navigation support
 - Screen reader compatibility
-- Color contrast 4.5:1 minimum
+- Color contrast 4.5:1 minimum for text
+- 3:1 minimum for interactive elements
 
 ### Focus States
-- Visible focus ring (2px blue outline)
+- Visible focus ring: 2px ember outline with 2px offset
 - Skip-to-content link
 - Logical tab order
+
+### Reduced Motion
+- All animations respect `prefers-reduced-motion`
+- Essential animations use opacity only
+- No auto-playing animations that can't be paused
 
 ---
 
@@ -347,33 +373,27 @@ const triggerGlitch = () => {
 ### Database Schema
 ```
 public schema (shared)     diq schema (project-specific)
-├── organizations          ├── departments
-├── projects               ├── employees
-├── users                  ├── kb_categories
-├── user_project_access    ├── articles / article_versions
-├── knowledge_items        ├── chat_threads / chat_messages
-└── activity_log           ├── workflows / workflow_steps
-                           ├── news_posts / news_comments
-                           ├── events / event_rsvps
-                           └── bookmarks / user_settings
++-- organizations          +-- departments (15)
++-- projects               +-- employees (60)
++-- users (60+)            +-- kb_categories (20)
++-- user_project_access    +-- articles (212)
++-- knowledge_items        +-- article_versions
++-- activity_log           +-- chat_threads (30)
+                           +-- chat_messages (26)
+                           +-- search_history
+                           +-- workflows (31)
+                           +-- workflow_steps (66)
+                           +-- workflow_executions (29)
+                           +-- news_posts (61)
+                           +-- news_comments
+                           +-- events (49)
+                           +-- event_rsvps
+                           +-- bookmarks
+                           +-- user_settings
 ```
 
-### User (public.users)
-```typescript
-interface User {
-  id: string;
-  clerk_id: string | null;
-  email: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  role: 'user' | 'admin' | 'super_admin';
-  organization_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
-```
+### Key TypeScript Interfaces
 
-### Employee (diq.employees)
 ```typescript
 interface Employee {
   id: string;
@@ -388,10 +408,7 @@ interface Employee {
   start_date: string | null;
   is_active: boolean;
 }
-```
 
-### Article (diq.articles)
-```typescript
 interface Article {
   id: string;
   title: string;
@@ -409,40 +426,7 @@ interface Article {
   created_at: string;
   updated_at: string;
 }
-```
 
-### ChatThread (diq.chat_threads)
-```typescript
-interface ChatThread {
-  id: string;
-  user_id: string;
-  title: string | null;
-  status: 'active' | 'archived' | 'deleted';
-  llm_model: string;
-  metadata: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-}
-```
-
-### ChatMessage (diq.chat_messages)
-```typescript
-interface ChatMessage {
-  id: string;
-  thread_id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  sources: object[];
-  confidence: number | null;
-  tokens_used: number | null;
-  llm_model: string | null;
-  metadata: Record<string, unknown>;
-  created_at: string;
-}
-```
-
-### Workflow (diq.workflows)
-```typescript
 interface Workflow {
   id: string;
   name: string;
@@ -457,86 +441,6 @@ interface Workflow {
 }
 ```
 
-### KnowledgeItem (public.knowledge_items - Cross-Project Search)
-```typescript
-interface KnowledgeItem {
-  id: string;
-  project_id: string;
-  source_table: string;
-  source_id: string;
-  type: string;
-  title: string;
-  content: string | null;
-  url: string | null;
-  tags: string[];
-  metadata: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-}
-```
-
----
-
-## INTEGRATION POINTS
-
-### Main App (Digital Workplace AI)
-- **URL:** http://localhost:3000 (dev)
-- **Auth:** Shared Clerk authentication
-- **Database:** Shared Supabase instance
-
-### External Services
-- Supabase (Database)
-- Clerk (Authentication)
-- Elasticsearch (Search) - planned
-- LLM APIs (AI Assistant) - planned
-
----
-
----
-
-## API ROUTES (Cross-Schema Joins)
-
-PostgREST cannot automatically resolve foreign keys across schemas (e.g., `diq.workflows.created_by` → `public.users.id`). API routes handle this:
-
-### Available Endpoints
-
-| Endpoint | Purpose | Foreign Keys Resolved |
-|----------|---------|----------------------|
-| `/api/dashboard` | News + Events | author_id, organizer_id → users |
-| `/api/workflows` | Workflows + Steps + Executions | created_by → users |
-| `/api/people` | Employees + Departments | user_id → users |
-| `/api/content` | Articles + Categories | author_id → users |
-
-### Pattern Implementation
-
-```typescript
-// /api/workflows/route.ts
-export async function GET() {
-  // 1. Fetch from diq schema
-  const { data: workflows } = await supabase
-    .schema('diq')
-    .from('workflows')
-    .select('*');
-
-  // 2. Get unique foreign key IDs
-  const creatorIds = [...new Set(workflows?.map(w => w.created_by).filter(Boolean))];
-
-  // 3. Fetch from public schema
-  const { data: users } = await supabase
-    .from('users')
-    .select('id, full_name, avatar_url')
-    .in('id', creatorIds);
-
-  // 4. Combine in JavaScript
-  const enrichedWorkflows = workflows?.map(workflow => ({
-    ...workflow,
-    creator: users?.find(u => u.id === workflow.created_by) || null,
-  }));
-
-  return NextResponse.json({ workflows: enrichedWorkflows });
-}
-```
-
 ---
 
 ## DEPLOYMENT
@@ -548,14 +452,50 @@ export async function GET() {
 | **dIQ Production** | https://intranet-iq.vercel.app |
 | **dIQ Dashboard** | https://intranet-iq.vercel.app/diq/dashboard |
 | **Main App** | https://digitalworkplace-ai.vercel.app |
+| **Main App Link** | `apps/main/src/app/dashboard/page.tsx:29` |
 
 ### Latest Deployment
-- **Git Commit:** `6c36d81`
-- **Date:** January 20, 2025
-- **Changes:** Cross-schema API routes, hydration fixes, enterprise data
+- **Git Commit:** `b9e86dd`
+- **Date:** January 21, 2026
+- **Version:** 0.7.0
+- **Changes:** Performance optimization, React Query, parallel APIs
 
 ---
 
-*Last Updated: January 20, 2025*
-*Version: 0.2.7*
+## PERFORMANCE OPTIMIZATIONS
+
+### React Query Configuration
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,        // 30 seconds
+      gcTime: 5 * 60 * 1000,       // 5 minutes
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+```
+
+### API Parallelization
+- Dashboard: 5 queries in parallel with `Promise.all()`
+- Content/People: Query-level filtering reduces data transfer by 50%
+
+### Memoization
+- Org chart tree building: O(n) with lookup maps
+- Employee transformations: `useMemo` for derived data
+
+### Cache Headers
+```typescript
+response.headers.set(
+  'Cache-Control',
+  'public, s-maxage=60, stale-while-revalidate=120'
+);
+```
+
+---
+
+*Last Updated: January 21, 2026*
+*Version: 0.7.0*
 *Part of Digital Workplace AI Product Suite*

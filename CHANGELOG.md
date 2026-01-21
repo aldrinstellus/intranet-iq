@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Performance Optimization Release
 
 #### React Query Integration
-- Installed `@tanstack/react-query` for client-side data caching
+- Installed `@tanstack/react-query` v5.x for client-side data caching
 - Created `QueryProvider` with optimized defaults (30s stale, 5min cache)
 - Created `useQueryHooks.ts` with centralized query keys
 - Automatic request deduplication across components
@@ -22,16 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dashboard API**: Parallelized 5 queries with `Promise.all()` (~3-5x faster)
 - **Content API**: Query-level filtering (categoryId, status, limit, offset)
 - **People API**: Query-level filtering (departmentId, search, limit, offset)
-- Fixed cross-schema joins (diq schema → public.users)
+- Fixed cross-schema joins (diq schema -> public.users)
 - Added `Cache-Control` headers for edge caching
 
 #### Client-Side Optimizations
 - Memoized `transformedEmployees` with `useMemo`
 - Created O(1) lookup maps for org chart child finding
-- Memoized `buildOrgTree` to prevent O(n²) rebuilds
+- Memoized `buildOrgTree` to prevent O(n^2) rebuilds
 
-#### Documentation
-- Created `docs/PERFORMANCE_AUDIT.md` with verification checklist
+#### New Files
+- `src/lib/providers/QueryProvider.tsx` - React Query configuration
+- `src/lib/hooks/useQueryHooks.ts` - Optimized data hooks
+- `docs/PERFORMANCE_AUDIT.md` - Performance verification checklist
 
 ### Changed
 - Load times reduced from 10-15 seconds to ~2-3 seconds (60-80% improvement)
@@ -43,76 +45,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.9] - 2026-01-21
+
+### Added - UX/UI Overhaul: Midnight Ember Design System
+
+#### Design System
+- Complete visual overhaul with "Midnight Ember" theme
+- Replaced blue/purple AI aesthetic with warm ember/orange accents
+- New color palette: obsidian backgrounds, ember accents, gold highlights
+
+#### Animation System
+- Framer Motion v12 integration throughout all pages
+- `FadeIn`, `SlideIn`, `StaggerList`, `ScaleOnHover` components
+- Page transition animations
+- Micro-interactions on all interactive elements
+- `prefers-reduced-motion` support
+
+#### New Motion Library
+- `src/lib/motion.tsx` - Reusable motion components
+- Spring physics for natural feel
+- 60fps performance target
+
+### Changed
+- 89 files modified with new design system
+- All 16 pages updated with Midnight Ember theme
+- Sidebar navigation with animated hover states
+- Card components with glow effects
+
+---
+
 ## [0.6.8] - 2026-01-21
 
-### Added
+### Added - PRD 100% Coverage Achieved
 
-#### PRD 100% Coverage Achieved
 All 7 EPICs from the Product Requirements Document are now fully implemented.
 
 #### New Components
 
 **EPIC 3: Knowledge Management**
-- `FileAttachmentUpload.tsx` - Drag-drop file upload with progress tracking, validation, expandable panel
-- Integrated into `ArticleEditor.tsx` with Paperclip toolbar button
+- `FileAttachmentUpload.tsx` - Drag-drop file upload with progress tracking
 
 **EPIC 4: Integration & Collaboration**
-- `PollWidget.tsx` - Full polling system with:
-  - Create Poll Modal (multiple choice, anonymous, expiration)
-  - Real-time voting with percentage bars
-  - Poll management (close, delete, view results)
+- `PollWidget.tsx` - Full polling system with voting and results
 
 **EPIC 5: Security & Access Control**
-- `AccessLogsViewer.tsx` - Access logs viewer with:
-  - Search across all fields
-  - Filters by action type, entity type, date range
-  - Pagination with page navigation
-  - CSV export functionality
-  - Detail modal with full log information
+- `AccessLogsViewer.tsx` - Access logs with search, filters, pagination, CSV export
 
 **EPIC 6: Workflow Automation**
-- `StructuredOutput.tsx` - Structured output formats:
-  - Five view formats: Table, List, Summary, JSON, Markdown
-  - Sortable table columns
-  - Export to CSV, JSON, and Markdown
-  - Collapsible output sections
+- `StructuredOutput.tsx` - Table, List, Summary, JSON, Markdown views with export
 
 **EPIC 7: Dashboards & Analytics**
-- `DrillDownModal.tsx` - Interactive drill-down analytics:
-  - Tabs for different breakdown views (by department, time, device)
-  - Charts and visualizations for each metric type
-  - Support for users, searches, conversations, views, daily activity, feature usage
-
-- `DashboardConfigPanel.tsx` - Admin dashboard configuration:
-  - Four tabs: Widgets, Layout Presets, Role Defaults, Appearance
-  - Drag-drop widget ordering with enable/disable toggles
-  - Pre-built layout presets (Default, Minimal, Productivity, Manager, Engagement)
-  - Role-based default configurations
-  - Appearance customization (theme, colors, card style, density, animations)
-
-### Changed
-
-**Analytics Page Updates**
-- Made all metric cards clickable with drill-down functionality
-- Made weekly activity chart bars clickable
-- Made usage by feature section clickable
-- Made AI performance metrics clickable
-- Added visual hover states and "click for details" hints
-
-### Documentation
-- Updated `PRD_GAP_ANALYSIS.md` to reflect 100% coverage
-- All 7 EPICs now marked as complete with detailed component references
+- `DrillDownModal.tsx` - Interactive drill-down analytics
+- `DashboardConfigPanel.tsx` - Admin dashboard configuration
 
 ### Summary by EPIC
 | EPIC | Coverage | Status |
 |------|----------|--------|
-| EPIC 1: Core Search and Discovery | 100% | ✅ Complete |
-| EPIC 2: AI-Driven Assistance | 100% | ✅ Complete |
-| EPIC 3: Knowledge Management | 100% | ✅ Complete |
-| EPIC 4: Integration and Customization | 100% | ✅ Complete |
-| EPIC 5: Security and Access Control | 100% | ✅ Complete |
-| EPIC 6: Workflow Automation | 100% | ✅ Complete |
-| EPIC 7: Dashboards and Analytics | 100% | ✅ Complete |
+| EPIC 1: Core Search and Discovery | 100% | Complete |
+| EPIC 2: AI-Driven Assistance | 100% | Complete |
+| EPIC 3: Knowledge Management | 100% | Complete |
+| EPIC 4: Integration and Customization | 100% | Complete |
+| EPIC 5: Security and Access Control | 100% | Complete |
+| EPIC 6: Workflow Automation | 100% | Complete |
+| EPIC 7: Dashboards and Analytics | 100% | Complete |
 
 ---
 
@@ -228,4 +223,4 @@ All 7 EPICs from the Product Requirements Document are now fully implemented.
 ---
 
 *Part of Digital Workplace AI Product Suite*
-*Location: /Users/aldrin-mac-mini/digitalworkplace.ai/apps/intranet-iq*
+*Repository: https://github.com/aldrinstellus/intranet-iq*
