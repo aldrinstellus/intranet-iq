@@ -43,3 +43,18 @@ export {
   alignNodes,
 } from './autoLayout';
 export type { LayoutDirection, LayoutOptions } from './autoLayout';
+
+// Executor
+export {
+  WorkflowExecutor,
+  getWorkflowExecutor,
+  handleWebhookTrigger,
+  handleScheduledTrigger,
+} from './executor';
+export type {
+  ExecutionContext,
+  ExecutionLog,
+  ExecutionResult,
+  StepResult,
+  WorkflowDefinition,
+} from './executor';

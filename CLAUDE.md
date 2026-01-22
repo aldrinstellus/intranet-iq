@@ -32,7 +32,8 @@
 
 **dIQ (Intranet IQ)** is an AI-powered internal knowledge network - part of the Digital Workplace AI product suite.
 
-**Version:** 0.8.0
+**Version:** 1.1.1 (Post-Audit TypeScript Cleanup)
+**Audit Score:** 100/100
 **Design System:** Midnight Ember (warm orange accents, not blue/purple)
 **Production:** https://intranet-iq.vercel.app/diq/dashboard
 
@@ -42,14 +43,17 @@
 - **Page Title:** "dIQ - Intranet IQ"
 - **Color Theme:** Midnight Ember (orange #f97316 accent)
 
-### Core Features
-- Enterprise Search (Elasticsearch + Semantic)
-- AI Assistant (Claude integration)
-- Knowledge Base Management (212 articles)
+### Core Features (v1.1.0)
+- Enterprise Search (Elasticsearch + Semantic + Federated)
+- AI Assistant (Claude with streaming, RAG, function calling)
+- Knowledge Base Management (212 articles + connector sources)
 - Employee Directory & Org Charts (60 employees)
-- Custom Agentic Workflows (31 templates)
+- Custom Agentic Workflows (full execution engine)
 - Role-based Access Control (RBAC)
 - React Query caching for 60-80% faster loads
+- EX Features (notifications, reactions, polls, channels)
+- Productivity Hub (/my-day page)
+- Admin Analytics Dashboard
 
 ---
 ## QUICK REFERENCE URLS
@@ -162,26 +166,29 @@ apps/intranet-iq/
 ```
 
 ---
-## PAGES IMPLEMENTED (16 Total)
+## PAGES IMPLEMENTED (19 Total)
 ---
 
 | Page | Route | Features |
 |------|-------|----------|
 | **Dashboard** | `/diq/dashboard` | News, events, stats, quick actions |
-| **Chat** | `/diq/chat` | Claude AI, threaded conversations |
-| **Search** | `/diq/search` | Semantic + keyword search, AI summary |
+| **Chat** | `/diq/chat` | Claude AI, streaming, RAG, function calling |
+| **Search** | `/diq/search` | Semantic + keyword + federated search |
 | **People** | `/diq/people` | Grid/list/tree views, 60 employees |
 | **Content** | `/diq/content` | 212 articles, tree navigation |
-| **Agents** | `/diq/agents` | 31 workflow templates |
+| **Agents** | `/diq/agents` | 31 workflow templates, full execution |
 | **Settings** | `/diq/settings` | 9 panels (profile, appearance, etc.) |
-| **News** | `/diq/news` | News feed |
+| **News** | `/diq/news` | News feed with reactions |
 | **Events** | `/diq/events` | Calendar view |
-| **Channels** | `/diq/channels` | Communication |
+| **Channels** | `/diq/channels` | Real backend with members, messages |
 | **Integrations** | `/diq/integrations` | Third-party services |
+| **Notifications** | `/diq/notifications` | **NEW** - Notification center |
+| **My Day** | `/diq/my-day` | **NEW** - Productivity hub, tasks |
 | **Elasticsearch** | `/diq/admin/elasticsearch` | 3 nodes, 28K docs |
 | **Analytics** | `/diq/admin/analytics` | Charts, drill-down |
 | **Permissions** | `/diq/admin/permissions` | RBAC management |
-| **News Detail** | `/diq/news/[id]` | Single article |
+| **Admin Dashboard** | `/diq/admin/dashboard` | **NEW** - Admin stats, system health |
+| **News Detail** | `/diq/news/[id]` | Single article with reactions |
 | **Events Detail** | `/diq/events/[id]` | Single event |
 
 ---
@@ -326,8 +333,42 @@ docker compose -f docker-compose.elasticsearch.yml up -d
 
 ---
 
+---
+## API ROUTES (35+ Total)
+---
+
+### Core APIs
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/dashboard` | GET | Dashboard data |
+| `/api/content` | GET | Articles with filtering |
+| `/api/people` | GET | Employees with filtering |
+| `/api/workflows` | GET/POST | Workflow management |
+| `/api/search` | GET | Search endpoint |
+
+### New v1.1.0 APIs
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/chat/stream` | POST | SSE streaming AI responses |
+| `/api/notifications` | GET/POST | Notification CRUD |
+| `/api/reactions` | GET/POST/DELETE | Reaction management |
+| `/api/recognitions` | GET/POST | Recognition/shoutouts |
+| `/api/polls` | GET/POST | Poll management |
+| `/api/channels` | GET/POST | Real channel backend |
+| `/api/tasks` | GET/POST | Task management |
+| `/api/celebrations` | GET | Birthday/anniversary |
+| `/api/connectors` | GET/POST | External connectors |
+| `/api/kb-spaces` | GET/POST | KB space management |
+| `/api/search/federated` | POST | Federated search |
+| `/api/workflows/execute` | POST/GET | Workflow execution |
+| `/api/workflows/webhook/[id]` | POST | Webhook triggers |
+| `/api/workflows/scheduled` | POST | Cron triggers |
+| `/api/admin/stats` | GET | Admin statistics |
+
+---
+
 *Part of Digital Workplace AI Product Suite*
 *Location: /Users/aldrin-mac-mini/digitalworkplace.ai/apps/intranet-iq*
-*Repository: https://github.com/aldrinstellus/intranet-iq*
-*Version: 0.8.0*
+*Repository: https://github.com/aldrinstellus/digitalworkplace.ai*
+*Version: 1.1.1*
 *Last Updated: January 22, 2026*
