@@ -455,7 +455,7 @@ interface Workflow {
 | **Main App Link** | `apps/main/src/app/dashboard/page.tsx:29` |
 
 ### Latest Deployment
-- **Git Commit:** Pending
+- **Git Commit:** `3a61376`
 - **Date:** January 22, 2026
 - **Version:** 0.8.0
 - **Changes:** Workflow Builder Upgrade (ReactFlow, vertical layout, rich templates)
