@@ -6,9 +6,9 @@
 
 This document contains design specifications, UI/UX guidelines, and brand identity details for **dIQ (Intranet IQ)** - the AI-powered internal knowledge network.
 
-**Version:** 0.7.0
+**Version:** 0.8.0
 **Design System:** Midnight Ember
-**Last Updated:** January 21, 2026
+**Last Updated:** January 22, 2026
 
 ---
 
@@ -455,10 +455,98 @@ interface Workflow {
 | **Main App Link** | `apps/main/src/app/dashboard/page.tsx:29` |
 
 ### Latest Deployment
-- **Git Commit:** `b9e86dd`
-- **Date:** January 21, 2026
-- **Version:** 0.7.0
-- **Changes:** Performance optimization, React Query, parallel APIs
+- **Git Commit:** Pending
+- **Date:** January 22, 2026
+- **Version:** 0.8.0
+- **Changes:** Workflow Builder Upgrade (ReactFlow, vertical layout, rich templates)
+
+---
+
+## WORKFLOW BUILDER (Glean-Inspired)
+
+### Overview
+The workflow builder uses ReactFlow (@xyflow/react) for a professional, drag-and-drop workflow canvas with vertical (top-to-bottom) layout.
+
+### Architecture
+```
+src/components/workflow/
+├── WorkflowBuilder.tsx        # Main container with ReactFlowProvider
+├── WorkflowCanvasNew.tsx      # ReactFlow canvas with drag-drop
+├── ComponentPalette.tsx       # Right-side panel for adding nodes
+├── WorkflowControls.tsx       # Floating toolbar (bottom-center)
+├── ContextMenu.tsx            # Right-click context menu
+├── nodes/
+│   ├── BaseNode.tsx           # Universal node component
+│   └── index.ts               # Node type registry
+├── edges/
+│   ├── DefaultEdge.tsx        # Standard connection
+│   ├── ConditionalEdge.tsx    # Yes/No branches
+│   └── index.ts               # Edge type registry
+└── panels/
+    └── NodeConfigPanel.tsx    # Slide-out config panel
+
+src/lib/workflow/
+├── store.ts                   # Zustand state management
+├── types.ts                   # TypeScript types
+├── constants.ts               # Node configs, colors
+├── validation.ts              # Connection validation
+├── serialization.ts           # DB ↔ ReactFlow conversion
+└── autoLayout.ts              # Dagre auto-layout
+```
+
+### Node Types & Colors
+| Type | Icon | Color | Handles |
+|------|------|-------|---------|
+| trigger | Zap | Purple (#a855f7) | Output only (bottom) |
+| search | Search | Blue (#3b82f6) | Input (top) + Output (bottom) |
+| action | Play | Green (#22c55e) | Input (top) + Output (bottom) |
+| condition | GitBranch | Orange (#f97316) | Input (top) + Yes/No (bottom) |
+| transform | Shuffle | Cyan (#06b6d4) | Input (top) + Output (bottom) |
+| output | CheckCircle | Gold (#fbbf24) | Input only (top) |
+
+### Workflow Templates (6)
+1. **Employee Onboarding** - HR onboarding automation
+2. **Document Approval** - Review and approval workflow
+3. **Data Sync** - System-to-system data synchronization
+4. **Report Generation** - Automated report creation
+5. **Email Campaign** - Marketing email automation
+6. **Ticket Routing** - Support ticket assignment
+
+### Keyboard Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + Z` | Undo |
+| `Cmd/Ctrl + Shift + Z` | Redo |
+| `Cmd/Ctrl + C` | Copy selected nodes |
+| `Cmd/Ctrl + V` | Paste nodes |
+| `Cmd/Ctrl + D` | Duplicate selected |
+| `Cmd/Ctrl + A` | Select all |
+| `Delete` | Delete selected |
+| `Escape` | Deselect all |
+| `Enter` | Open config panel |
+
+### State Management (Zustand)
+```typescript
+interface WorkflowStore {
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+  selectedNodeId: string | null;
+  selectedNodeIds: string[];
+  isDirty: boolean;
+  history: HistoryState[];
+  historyIndex: number;
+
+  // Actions
+  addNode: (type, position) => void;
+  deleteNode: (id) => void;
+  updateNode: (id, updates) => void;
+  undo: () => void;
+  redo: () => void;
+  copySelectedNodes: () => void;
+  pasteNodes: () => void;
+  // ... more actions
+}
+```
 
 ---
 

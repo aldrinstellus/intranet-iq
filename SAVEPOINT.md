@@ -3,11 +3,11 @@
 ---
 
 ## CURRENT STATE
-**Last Updated:** January 21, 2026 @ 6:30 PM
-**Session:** Full Spectrum Save - Performance Optimization Complete
-**Version:** 0.7.0
-**Git Commit:** b9e86dd (pushed to GitHub)
-**Vercel Status:** Auto-deploying
+**Last Updated:** January 22, 2026 @ 10:30 AM
+**Session:** Workflow Builder Upgrade - Glean-Inspired Design
+**Version:** 0.8.0
+**Git Commit:** Pending push
+**Vercel Status:** Auto-deploying on push
 
 ---
 
@@ -46,75 +46,96 @@ The app uses the "Midnight Ember" design system - a warm, distinctive aesthetic 
 
 ## WHAT WAS ACCOMPLISHED
 
-### Session: January 21, 2026 (Performance Optimization)
+### Session: January 22, 2026 (Workflow Builder Upgrade)
 
 #### Problem Addressed
-- **10-15 second delay** before data loads across all pages
-- Sequential API calls blocking page rendering
-- Full datasets fetched and filtered client-side
-- O(n^2) org chart tree building
+- Legacy workflow builder was too basic with limited functionality
+- No proper drag-and-drop for nodes
+- Templates showing empty canvas when created
+- Horizontal layout was outdated compared to modern workflow builders (like Glean)
 
 #### Solutions Implemented
 
-1. **React Query Integration**
-   - Installed `@tanstack/react-query` v5.x
-   - Created `QueryProvider` with optimized defaults
-   - Created `useQueryHooks.ts` with centralized query keys
-   - Automatic request deduplication
-   - Stale-while-revalidate caching (30s stale, 5min cache)
+1. **ReactFlow Integration**
+   - Installed `@xyflow/react` for professional workflow canvas
+   - Custom node types: trigger, search, action, condition, transform, output
+   - Custom edge types: default and conditional (Yes/No branches)
+   - Vertical (top-to-bottom) layout matching modern workflow builders
 
-2. **API Route Parallelization**
-   | API | Before | After | Improvement |
-   |-----|--------|-------|-------------|
-   | Dashboard | 5 sequential queries | `Promise.all()` | 3-5x faster |
-   | Content | Full dataset fetch | Query-level filters | 50% less data |
-   | People | Full dataset fetch | Query-level filters | 50% less data |
+2. **New Workflow Components**
+   | Component | Purpose |
+   |-----------|---------|
+   | `WorkflowBuilder.tsx` | Main container with ReactFlowProvider |
+   | `WorkflowCanvasNew.tsx` | ReactFlow canvas with drag-drop |
+   | `ComponentPalette.tsx` | Right-side panel for adding nodes |
+   | `WorkflowControls.tsx` | Floating toolbar (undo/redo, zoom, save) |
+   | `ContextMenu.tsx` | Right-click context menu |
+   | `BaseNode.tsx` | Universal node with vertical handles |
+   | `DefaultEdge.tsx` | Standard connection edge |
+   | `ConditionalEdge.tsx` | Yes/No conditional branches |
 
-3. **Cross-Schema Join Fixes**
-   - Fixed FK joins between `diq` schema and `public.users`
-   - Implemented batch user lookups with `Map` for O(1) access
-   - Manual enrichment pattern for cross-schema relationships
+3. **Rich Workflow Templates (6)**
+   - Employee Onboarding (6 steps)
+   - Document Approval (6 steps)
+   - Data Sync (6 steps)
+   - Report Generation (6 steps)
+   - Email Campaign (6 steps)
+   - Ticket Routing (6 steps)
 
-4. **Client-Side Optimizations**
-   - Memoized `transformedEmployees` with `useMemo`
-   - Created employee lookup maps for O(1) child finding
-   - Memoized `buildOrgTree` to prevent O(n^2) rebuilds
+4. **State Management (Zustand)**
+   - Full undo/redo history (50 steps)
+   - Copy/paste/duplicate nodes
+   - Multi-select support
+   - Auto-save with dirty state tracking
 
-5. **Cache Headers Added**
-   - `Cache-Control: public, s-maxage=60, stale-while-revalidate=120`
+5. **Keyboard Shortcuts**
+   - Cmd+Z/Y for undo/redo
+   - Cmd+C/V for copy/paste
+   - Cmd+D for duplicate
+   - Delete for remove
+   - Escape to deselect
 
-#### Performance Results
-| Metric | Before | After |
-|--------|--------|-------|
-| Initial load | 10-15 sec | 2-3 sec |
-| Cached navigation | 10-15 sec | Instant |
-| Improvement | - | **60-80% faster** |
+6. **Template Fix**
+   - Templates now properly convert to ReactFlow nodes
+   - Both database format and legacy format supported
+   - Vertical positioning for new workflows
 
 ---
 
 ## FILES CREATED/MODIFIED
 
-### New Files (3)
+### New Files (15+)
 | File | Purpose |
 |------|---------|
-| `src/lib/providers/QueryProvider.tsx` | React Query client configuration |
-| `src/lib/hooks/useQueryHooks.ts` | Optimized hooks with query keys |
-| `docs/PERFORMANCE_AUDIT.md` | Verification guide for future sessions |
+| `src/components/workflow/WorkflowBuilder.tsx` | Main builder container |
+| `src/components/workflow/WorkflowCanvasNew.tsx` | ReactFlow canvas |
+| `src/components/workflow/ComponentPalette.tsx` | Node palette (right panel) |
+| `src/components/workflow/WorkflowControls.tsx` | Floating controls |
+| `src/components/workflow/ContextMenu.tsx` | Right-click menu |
+| `src/components/workflow/WorkflowToolbar.tsx` | Top toolbar |
+| `src/components/workflow/index.ts` | Component exports |
+| `src/components/workflow/nodes/BaseNode.tsx` | Universal node component |
+| `src/components/workflow/nodes/index.ts` | Node type registry |
+| `src/components/workflow/edges/DefaultEdge.tsx` | Standard edge |
+| `src/components/workflow/edges/ConditionalEdge.tsx` | Yes/No edge |
+| `src/components/workflow/edges/index.ts` | Edge type registry |
+| `src/components/workflow/panels/NodeConfigPanel.tsx` | Config slide-out |
+| `src/lib/workflow/store.ts` | Zustand state management |
+| `src/lib/workflow/types.ts` | TypeScript types |
+| `src/lib/workflow/constants.ts` | Node configs, colors |
+| `src/lib/workflow/validation.ts` | Connection validation |
+| `src/lib/workflow/serialization.ts` | DB ↔ ReactFlow conversion |
+| `src/lib/workflow/autoLayout.ts` | Dagre auto-layout |
+| `src/app/api/workflows/steps/route.ts` | Steps CRUD API |
+| `src/app/api/workflows/edges/route.ts` | Edges CRUD API |
 
-### Modified Files (11)
+### Modified Files
 | File | Changes |
 |------|---------|
-| `src/app/api/dashboard/route.ts` | Parallelized with Promise.all() |
-| `src/app/api/content/route.ts` | Query-level filtering, pagination |
-| `src/app/api/people/route.ts` | Query-level filtering, batch user lookup |
-| `src/app/people/page.tsx` | Memoized org chart tree building |
-| `src/app/layout.tsx` | Added QueryProvider wrapper |
-| `src/lib/hooks/useSupabase.ts` | Re-exports optimized hooks |
-| `package.json` | Added @tanstack/react-query |
-| `CHANGELOG.md` | Updated with v0.7.0 |
-| `SAVEPOINT.md` | This file |
-| `src/app/dashboard/page.tsx` | Minor updates |
-| `src/app/content/page.tsx` | Minor updates |
+| `src/app/agents/page.tsx` | Template creation with node conversion |
+| `src/app/globals.css` | Workflow builder CSS styles |
+| `src/app/api/workflows/route.ts` | Workflow save API |
+| `src/lib/database.types.ts` | Workflow edge types |
 
 ---
 
@@ -128,6 +149,8 @@ The app uses the "Midnight Ember" design system - a warm, distinctive aesthetic 
 | Employees | 60 | diq.employees |
 | Departments | 15 | diq.departments |
 | Workflows | 31 | diq.workflows |
+| Workflow Steps | 66+ | diq.workflow_steps |
+| Workflow Edges | 50+ | diq.workflow_edges |
 | News Posts | 61 | diq.news_posts |
 | Events | 49 | diq.events |
 | Chat Threads | 30 | diq.chat_threads |
@@ -152,7 +175,7 @@ The app uses the "Midnight Ember" design system - a warm, distinctive aesthetic 
 | Search | `/diq/search` | Working | Semantic + keyword |
 | People | `/diq/people` | Working | 60 employees, 15 depts |
 | Content | `/diq/content` | Working | 212 articles, 20 categories |
-| Agents | `/diq/agents` | Working | 31 workflows |
+| **Agents** | `/diq/agents` | **Upgraded** | 31 workflows, 6 templates |
 | Settings | `/diq/settings` | Working | 9 panels |
 | News | `/diq/news` | Working | News feed |
 | Events | `/diq/events` | Working | Calendar |
@@ -172,6 +195,9 @@ The app uses the "Midnight Ember" design system - a warm, distinctive aesthetic 
 |------------|---------|---------|
 | Next.js | 16.1.3 | React framework |
 | React Query | 5.x | Data caching/fetching |
+| **ReactFlow** | @xyflow/react | Workflow canvas |
+| **Zustand** | 5.x | Workflow state management |
+| **Dagre** | 1.x | Auto-layout algorithm |
 | TypeScript | 5.x | Type safety |
 | Clerk | @clerk/nextjs | Authentication |
 | Supabase | @supabase/supabase-js | Database |
@@ -189,17 +215,15 @@ The app uses the "Midnight Ember" design system - a warm, distinctive aesthetic 
 cd /Users/aldrin-mac-mini/digitalworkplace.ai/apps/intranet-iq
 npm run dev
 
-# Test API response times
-time curl -s http://localhost:3001/diq/api/dashboard | jq '.stats'
-time curl -s http://localhost:3001/diq/api/people | jq '.employees | length'
-time curl -s http://localhost:3001/diq/api/content | jq '.articles | length'
+# Test workflows API
+curl -s http://localhost:3001/diq/api/workflows | jq '.workflows | length'
 
-# Test with filters
-curl -s "http://localhost:3001/diq/api/people?departmentId=<id>&limit=10"
-curl -s "http://localhost:3001/diq/api/content?status=published&limit=20"
+# Test workflow steps
+curl -s http://localhost:3001/diq/api/workflows | jq '.workflows[0].steps | length'
 
-# Test production API
-curl -s https://intranet-iq.vercel.app/diq/api/dashboard | jq '.stats'
+# Open workflow builder
+# http://localhost:3001/diq/agents
+# Click "New" → Select template → Should show full workflow in canvas
 ```
 
 ---
@@ -208,9 +232,9 @@ curl -s https://intranet-iq.vercel.app/diq/api/dashboard | jq '.stats'
 
 | Commit | Date | Description |
 |--------|------|-------------|
+| Pending | Jan 22, 2026 | feat(diq): Workflow Builder Upgrade v0.8.0 |
 | b9e86dd | Jan 21, 2026 | docs: Update commit hash in SAVEPOINT |
 | bc65405 | Jan 21, 2026 | feat(diq): Performance optimization v0.7.0 |
-| 250a122 | Jan 21, 2026 | docs: update SAVEPOINT.md for v0.6.9 |
 
 ---
 
@@ -221,19 +245,16 @@ curl -s https://intranet-iq.vercel.app/diq/api/dashboard | jq '.stats'
 
 ## PREVIOUS SESSIONS
 
-### January 21, 2026 (Settings Full Spectrum Test)
-- All 9 settings panels tested and verified
-- Appearance panel theme switching fixed
-- Commit: 3afc0cf
+### January 21, 2026 (Performance Optimization - v0.7.0)
+- React Query integration for 60-80% faster loads
+- API parallelization with Promise.all()
+- Cross-schema join fixes
+- Commit: b9e86dd
 
 ### January 21, 2026 (UX/UI Overhaul - Midnight Ember)
 - Complete visual overhaul with Midnight Ember design system
 - Framer Motion animations throughout
 - 89 files changed, 25,125 insertions
-
-### January 21, 2026 (PRD 100% Coverage - v0.6.8)
-- All 7 EPICs from PRD fully implemented
-- New components: FileAttachmentUpload, PollWidget, AccessLogsViewer, StructuredOutput, DrillDownModal, DashboardConfigPanel
 
 ---
 
@@ -251,4 +272,4 @@ curl -s https://intranet-iq.vercel.app/diq/api/dashboard | jq '.stats'
 
 *Part of Digital Workplace AI Product Suite*
 *Repository: https://github.com/aldrinstellus/intranet-iq*
-*Documentation: docs/PERFORMANCE_AUDIT.md*
+*Production: https://intranet-iq.vercel.app/diq/agents*

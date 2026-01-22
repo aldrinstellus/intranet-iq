@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - 2026-01-22
+
+### Added - Workflow Builder Upgrade (Glean-Inspired)
+
+#### ReactFlow Integration
+- Complete rebuild of workflow builder using `@xyflow/react` (ReactFlow)
+- Vertical (top-to-bottom) layout for modern workflow visualization
+- Custom node types: trigger, search, action, condition, transform, output
+- Custom edge types: default and conditional (success/failure branches)
+- Smooth step path connections with animated flow indicators
+
+#### New Components
+- `WorkflowBuilder.tsx` - Main container with ReactFlowProvider
+- `WorkflowCanvasNew.tsx` - ReactFlow canvas with drag-drop support
+- `ComponentPalette.tsx` - Right-side panel for adding workflow components
+- `WorkflowControls.tsx` - Compact floating toolbar (undo/redo, zoom, auto-layout, save)
+- `ContextMenu.tsx` - Right-click context menu for quick actions
+- `BaseNode.tsx` - Universal node component with vertical handles
+- `DefaultEdge.tsx` - Standard connection edge with delete on select
+- `ConditionalEdge.tsx` - Yes/No branches for condition nodes
+- `NodeConfigPanel.tsx` - Slide-out configuration panel for nodes
+
+#### Workflow Templates (6 Rich Templates)
+- **Employee Onboarding**: 6 steps (accounts → equipment → training)
+- **Document Approval**: 6 steps (submit → review → approve/reject)
+- **Data Sync**: 6 steps (fetch → transform → validate → sync)
+- **Report Generation**: 6 steps (gather → aggregate → generate → distribute)
+- **Email Campaign**: 6 steps (audience → segment → personalize → send)
+- **Ticket Routing**: 6 steps (analyze → prioritize → route → assign)
+
+#### State Management
+- Zustand store for workflow state (`src/lib/workflow/store.ts`)
+- Full undo/redo history with 50-step limit
+- Copy/paste/duplicate nodes support
+- Multi-select with Shift+Click
+- Auto-save with dirty state tracking
+
+#### Keyboard Shortcuts
+- `Cmd/Ctrl + Z` - Undo
+- `Cmd/Ctrl + Shift + Z` or `Cmd/Ctrl + Y` - Redo
+- `Cmd/Ctrl + C` - Copy selected nodes
+- `Cmd/Ctrl + V` - Paste nodes
+- `Cmd/Ctrl + D` - Duplicate selected nodes
+- `Cmd/Ctrl + A` - Select all nodes
+- `Delete/Backspace` - Delete selected nodes
+- `Escape` - Deselect all, close panels
+- `Enter` - Open config panel for selected node
+
+#### Visual Design (Midnight Ember)
+- Glean-inspired clean, compact UI
+- Vertical workflow layout (top-to-bottom)
+- Node colored accent bars (purple trigger, blue search, green action, orange condition, cyan transform, gold output)
+- Animated connection lines when dragging
+- Selection glow effects
+- Minimap with node colors
+- Custom scrollbars and focus states
+
+#### Serialization
+- `workflowToReactFlow()` - Database → ReactFlow conversion
+- `reactFlowToDatabase()` - ReactFlow → Database conversion
+- `convertLegacyWorkflow()` - Legacy trigger_config.steps support
+- Vertical layout positioning for new workflows
+
+### Changed
+- Workflow canvas now uses top-to-bottom layout (was left-to-right)
+- Node handles positioned at top (input) and bottom (output)
+- Condition nodes have Yes/No handles at 30%/70% positions
+- Template creation now shows full workflow in canvas immediately
+
+### Fixed
+- Templates showing empty canvas (now properly converted to nodes)
+- handleEditWorkflow detecting database vs legacy workflow formats
+- Edge source handles for condition nodes
+
+---
+
 ## [0.7.0] - 2026-01-21
 
 ### Added - Performance Optimization Release
