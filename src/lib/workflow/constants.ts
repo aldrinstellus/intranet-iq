@@ -10,6 +10,7 @@ import {
   GitBranch,
   Shuffle,
   CheckCircle,
+  UserCheck,
   type LucideIcon,
 } from 'lucide-react';
 import type { WorkflowNodeType, WorkflowNodeData } from './types';
@@ -88,9 +89,9 @@ export const NODE_TYPE_CONFIG: Record<WorkflowNodeType, NodeTypeConfig> = {
     label: 'Condition',
     description: 'Branch workflow based on conditions',
     icon: GitBranch,
-    color: '#f97316', // Orange
-    bgColor: 'rgba(249, 115, 22, 0.15)',
-    borderColor: 'rgba(249, 115, 22, 0.4)',
+    color: '#10b981', // Green
+    bgColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
     handles: {
       inputs: [{ id: 'input', label: 'Input' }],
       outputs: [
@@ -135,6 +136,28 @@ export const NODE_TYPE_CONFIG: Record<WorkflowNodeType, NodeTypeConfig> = {
       format: 'json',
     },
   },
+  approval: {
+    type: 'approval',
+    label: 'Approval',
+    description: 'Human-in-the-loop approval step',
+    icon: UserCheck,
+    color: '#f97316', // Orange
+    bgColor: 'rgba(249, 115, 22, 0.15)',
+    borderColor: 'rgba(249, 115, 22, 0.4)',
+    handles: {
+      inputs: [{ id: 'input', label: 'Input' }],
+      outputs: [
+        { id: 'approved', label: 'Approved' },
+        { id: 'rejected', label: 'Rejected' },
+      ],
+    },
+    defaultConfig: {
+      approvalType: 'single',
+      requiredApprovals: 1,
+      timeoutHours: 72,
+      timeoutAction: 'escalate',
+    },
+  },
 };
 
 // =============================================================================
@@ -165,7 +188,7 @@ export const EDGE_STYLES = {
     animated: false,
   },
   selected: {
-    stroke: '#f97316',
+    stroke: '#10b981',
     strokeWidth: 3,
     animated: true,
   },
@@ -204,12 +227,13 @@ export const KEYBOARD_SHORTCUTS = {
 // =============================================================================
 
 export const CONNECTION_RULES: Record<WorkflowNodeType, WorkflowNodeType[]> = {
-  trigger: ['search', 'action', 'condition', 'transform', 'output'],
-  search: ['action', 'condition', 'transform', 'output'],
-  action: ['search', 'action', 'condition', 'transform', 'output'],
-  condition: ['search', 'action', 'condition', 'transform', 'output'],
-  transform: ['search', 'action', 'condition', 'transform', 'output'],
+  trigger: ['search', 'action', 'condition', 'transform', 'output', 'approval'],
+  search: ['action', 'condition', 'transform', 'output', 'approval'],
+  action: ['search', 'action', 'condition', 'transform', 'output', 'approval'],
+  condition: ['search', 'action', 'condition', 'transform', 'output', 'approval'],
+  transform: ['search', 'action', 'condition', 'transform', 'output', 'approval'],
   output: [], // Output nodes cannot connect to anything
+  approval: ['search', 'action', 'condition', 'transform', 'output'], // Approval can continue to other nodes
 };
 
 // Helper to check if connection is valid
