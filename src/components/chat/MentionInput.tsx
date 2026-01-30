@@ -147,13 +147,13 @@ export function MentionInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="w-full bg-transparent text-white placeholder-white/40 outline-none resize-none text-sm leading-relaxed min-h-[24px] max-h-[120px]"
+        className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none resize-none text-sm leading-relaxed min-h-[24px] max-h-[120px]"
         rows={1}
       />
 
       {/* Mention Suggestions */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 bg-[#0f0f14] border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute bottom-full left-0 mb-2 w-72 bg-[var(--bg-charcoal)] border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
           <div className="p-2">
             <p className="text-xs text-white/40 px-2 py-1 mb-1">
               {mentionSearch ? `Matching "${mentionSearch}"` : "Suggestions"}

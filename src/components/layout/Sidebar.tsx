@@ -14,6 +14,11 @@ import {
   Database,
   BarChart3,
   Shield,
+  Bell,
+  Hash,
+  Newspaper,
+  Calendar,
+  ListTodo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IQLogo } from "@/components/brand/IQLogo";
@@ -21,9 +26,13 @@ import { IQLogo } from "@/components/brand/IQLogo";
 const navigation = [
   { name: "Home", href: "/dashboard", icon: Home },
   { name: "Chat", href: "/chat", icon: MessageSquare },
-  { name: "Agents", href: "/agents", icon: Bot },
+  { name: "My Day", href: "/my-day", icon: ListTodo },
+  { name: "News", href: "/news", icon: Newspaper },
+  { name: "Events", href: "/events", icon: Calendar },
+  { name: "Channels", href: "/channels", icon: Hash },
   { name: "People", href: "/people", icon: Users },
   { name: "Content", href: "/content", icon: FolderOpen },
+  { name: "Agents", href: "/agents", icon: Bot },
 ];
 
 const adminNavigation = [
@@ -80,6 +89,10 @@ export function Sidebar() {
           isActive={pathname === "/search"}
         />
         <NavItem
+          item={{ name: "Notifications", href: "/notifications", icon: Bell }}
+          isActive={pathname === "/notifications"}
+        />
+        <NavItem
           item={{ name: "Settings", href: "/settings", icon: Settings }}
           isActive={pathname === "/settings" || pathname.startsWith("/settings/")}
         />
@@ -124,10 +137,10 @@ function NavItem({ item, isActive, isAdmin }: NavItemProps) {
           )}
           initial={false}
           animate={{
-            backgroundColor: isActive ? "rgba(249, 115, 22, 0.15)" : "rgba(255, 255, 255, 0)",
+            backgroundColor: isActive ? "rgba(16, 185, 129, 0.15)" : "rgba(255, 255, 255, 0)",
           }}
           whileHover={{
-            backgroundColor: isActive ? "rgba(249, 115, 22, 0.2)" : "rgba(255, 255, 255, 0.05)",
+            backgroundColor: isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(255, 255, 255, 0.05)",
           }}
           transition={{ duration: 0.2 }}
         />

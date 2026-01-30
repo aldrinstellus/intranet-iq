@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/lib/motion";
@@ -16,13 +16,100 @@ import {
   Video,
   Building,
   Globe,
+  List,
+  Grid3X3,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  HelpCircle,
+  X,
 } from "lucide-react";
 import type { Event } from "@/lib/database.types";
+
+type ViewMode = "list" | "calendar";
+type RSVPStatus = "going" | "maybe" | "not-going" | null;
+
+interface EventRSVP {
+  eventId: string;
+  status: RSVPStatus;
+  attendeeCount: number;
+}
 
 export default function EventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "virtual" | "in-person" | "hybrid">("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const { events, loading } = useUpcomingEvents({ limit: 50 });
+  const [rsvps, setRsvps] = useState<Map<string, EventRSVP>>(new Map());
+
+  // Generate consistent attendee counts based on event id (deterministic, not random)
+  const getBaseAttendeeCount = useCallback((eventId: string): number => {
+    // Use hash of eventId to generate a consistent "random" number
+    let hash = 0;
+    for (let i = 0; i < eventId.length; i++) {
+      const char = eventId.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash % 50) + 5; // 5-54 attendees
+  }, []);
+
+  const handleRSVP = useCallback((eventId: string, status: RSVPStatus) => {
+    setRsvps((prev) => {
+      const newMap = new Map(prev);
+      const currentRsvp = newMap.get(eventId);
+      const currentStatus = currentRsvp?.status;
+      const baseCount = getBaseAttendeeCount(eventId);
+      const currentCount = currentRsvp?.attendeeCount ?? baseCount;
+
+      // Toggle off if clicking the same status
+      if (currentStatus === status) {
+        newMap.set(eventId, { eventId, status: null, attendeeCount: currentCount - (status === "going" ? 1 : 0) });
+      } else {
+        // Adjust attendee count based on RSVP change
+        let newCount = currentCount;
+        if (currentStatus === "going") newCount--;
+        if (status === "going") newCount++;
+        newMap.set(eventId, { eventId, status, attendeeCount: newCount });
+      }
+      return newMap;
+    });
+  }, [getBaseAttendeeCount]);
+
+  const getRSVP = useCallback((eventId: string): EventRSVP => {
+    const existingRsvp = rsvps.get(eventId);
+    if (existingRsvp) return existingRsvp;
+    return { eventId, status: null, attendeeCount: getBaseAttendeeCount(eventId) };
+  }, [rsvps, getBaseAttendeeCount]);
+
+  // Calendar helpers
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const getEventsForDay = (day: number) => {
+    return events.filter((event: Event) => {
+      const eventDate = new Date(event.start_time);
+      return (
+        eventDate.getDate() === day &&
+        eventDate.getMonth() === currentMonth.getMonth() &&
+        eventDate.getFullYear() === currentMonth.getFullYear()
+      );
+    });
+  };
+
+  const navigateMonth = (direction: number) => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + direction, 1));
+  };
+
+  const daysInMonth = getDaysInMonth(currentMonth);
+  const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
+  const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const filteredEvents = events.filter((event: Event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,7 +157,7 @@ export default function EventsPage() {
             </p>
           </div>
 
-          {/* Search and Filter */}
+          {/* Search, Filter, and View Toggle */}
           <div className="flex gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
@@ -95,12 +182,127 @@ export default function EventsPage() {
                 <option value="hybrid">Hybrid</option>
               </select>
             </div>
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-1 bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] rounded-xl p-1">
+              <motion.button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === "list"
+                    ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-slate)]"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                title="List view"
+              >
+                <List className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                onClick={() => setViewMode("calendar")}
+                className={`p-2 rounded-lg transition-colors ${
+                  viewMode === "calendar"
+                    ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-slate)]"
+                }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                title="Calendar view"
+              >
+                <Grid3X3 className="w-5 h-5" />
+              </motion.button>
+            </div>
           </div>
 
-          {/* Events List */}
+          {/* Events Content */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-ember)]" />
+            </div>
+          ) : viewMode === "calendar" ? (
+            /* Calendar View */
+            <div className="bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] rounded-xl overflow-hidden">
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)]">
+                <motion.button
+                  onClick={() => navigateMonth(-1)}
+                  className="p-2 rounded-lg hover:bg-[var(--bg-slate)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </motion.button>
+                <h3 className="text-lg font-medium text-[var(--text-primary)]">
+                  {currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                </h3>
+                <motion.button
+                  onClick={() => navigateMonth(1)}
+                  className="p-2 rounded-lg hover:bg-[var(--bg-slate)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </motion.button>
+              </div>
+
+              {/* Week Days Header */}
+              <div className="grid grid-cols-7 border-b border-[var(--border-subtle)]">
+                {weekDays.map((day) => (
+                  <div key={day} className="p-3 text-center text-sm font-medium text-[var(--text-muted)]">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7">
+                {/* Empty cells for days before the first day of month */}
+                {Array.from({ length: firstDayOfMonth }).map((_, index) => (
+                  <div key={`empty-${index}`} className="min-h-[100px] p-2 border-b border-r border-[var(--border-subtle)] bg-[var(--bg-slate)]/30" />
+                ))}
+
+                {/* Days of the month */}
+                {Array.from({ length: daysInMonth }).map((_, index) => {
+                  const day = index + 1;
+                  const dayEvents = getEventsForDay(day);
+                  const isToday =
+                    day === new Date().getDate() &&
+                    currentMonth.getMonth() === new Date().getMonth() &&
+                    currentMonth.getFullYear() === new Date().getFullYear();
+
+                  return (
+                    <div
+                      key={day}
+                      className={`min-h-[100px] p-2 border-b border-r border-[var(--border-subtle)] ${
+                        isToday ? "bg-[var(--accent-ember)]/5" : ""
+                      }`}
+                    >
+                      <div className={`text-sm mb-1 ${
+                        isToday
+                          ? "w-6 h-6 rounded-full bg-[var(--accent-ember)] text-white flex items-center justify-center font-medium"
+                          : "text-[var(--text-muted)]"
+                      }`}>
+                        {day}
+                      </div>
+                      <div className="space-y-1">
+                        {dayEvents.slice(0, 3).map((event: Event) => (
+                          <div
+                            key={event.id}
+                            className="text-xs p-1 rounded bg-[var(--accent-ember)]/20 text-[var(--accent-ember)] truncate cursor-pointer hover:bg-[var(--accent-ember)]/30 transition-colors"
+                            title={event.title}
+                          >
+                            {event.title}
+                          </div>
+                        ))}
+                        {dayEvents.length > 3 && (
+                          <div className="text-xs text-[var(--text-muted)]">
+                            +{dayEvents.length - 3} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-12">
@@ -111,6 +313,7 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
+            /* List View */
             <StaggerContainer className="space-y-4">
               {filteredEvents.map((event: Event) => (
                 <StaggerItem key={event.id}>
@@ -168,12 +371,82 @@ export default function EventsPage() {
                               {event.location}
                             </span>
                           )}
-                          {event.max_attendees && (
-                            <span className="flex items-center gap-1.5">
-                              <Users className="w-4 h-4" />
-                              {event.max_attendees} max attendees
+                          <span className="flex items-center gap-1.5">
+                            <Users className="w-4 h-4" />
+                            {getRSVP(event.id).attendeeCount} attending
+                          </span>
+                        </div>
+
+                        {/* RSVP Buttons */}
+                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[var(--border-subtle)]">
+                          {getRSVP(event.id).status && (
+                            <span className="text-sm text-[var(--text-muted)] mr-2">
+                              Your RSVP:{" "}
+                              <span className={`font-medium ${
+                                getRSVP(event.id).status === "going"
+                                  ? "text-emerald-500"
+                                  : getRSVP(event.id).status === "maybe"
+                                  ? "text-amber-500"
+                                  : "text-red-400"
+                              }`}>
+                                {getRSVP(event.id).status === "going"
+                                  ? "Going"
+                                  : getRSVP(event.id).status === "maybe"
+                                  ? "Maybe"
+                                  : "Can't Go"}
+                              </span>
                             </span>
                           )}
+                          <div className="flex gap-2 ml-auto">
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRSVP(event.id, "going");
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                                getRSVP(event.id).status === "going"
+                                  ? "bg-emerald-500 text-white"
+                                  : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                              }`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <Check className="w-4 h-4" />
+                              Going
+                            </motion.button>
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRSVP(event.id, "maybe");
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                                getRSVP(event.id).status === "maybe"
+                                  ? "bg-amber-500 text-white"
+                                  : "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
+                              }`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <HelpCircle className="w-4 h-4" />
+                              Maybe
+                            </motion.button>
+                            <motion.button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRSVP(event.id, "not-going");
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                                getRSVP(event.id).status === "not-going"
+                                  ? "bg-red-500 text-white"
+                                  : "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                              }`}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <X className="w-4 h-4" />
+                              Can&apos;t Go
+                            </motion.button>
+                          </div>
                         </div>
                       </div>
                     </div>

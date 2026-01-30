@@ -14,18 +14,90 @@ import {
   Search,
   Filter,
   Loader2,
+  Plus,
+  X,
+  Pin,
+  UserPlus,
+  UserCheck,
+  Tag,
+  User,
 } from "lucide-react";
 import type { NewsPost } from "@/lib/database.types";
 
+// Mock categories and authors for following
+const categories = [
+  { id: "company", name: "Company Updates", postCount: 15 },
+  { id: "engineering", name: "Engineering", postCount: 8 },
+  { id: "hr", name: "HR & Benefits", postCount: 12 },
+  { id: "product", name: "Product News", postCount: 10 },
+  { id: "culture", name: "Culture & Events", postCount: 6 },
+];
+
+const authors = [
+  { id: "1", name: "Sarah Chen", role: "CEO", avatar: "SC" },
+  { id: "2", name: "Mike Johnson", role: "VP Engineering", avatar: "MJ" },
+  { id: "3", name: "Lisa Park", role: "HR Director", avatar: "LP" },
+  { id: "4", name: "James Wilson", role: "Product Lead", avatar: "JW" },
+];
+
 export default function NewsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "pinned">("all");
+  const [filter, setFilter] = useState<"all" | "pinned" | "following">("all");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostPinned, setNewPostPinned] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [followedCategories, setFollowedCategories] = useState<string[]>(["company", "product"]);
+  const [followedAuthors, setFollowedAuthors] = useState<string[]>(["1"]);
   const { posts, loading } = useNewsPosts({ limit: 50 });
+
+  const toggleFollowCategory = (categoryId: string) => {
+    setFollowedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const toggleFollowAuthor = (authorId: string) => {
+    setFollowedAuthors((prev) =>
+      prev.includes(authorId)
+        ? prev.filter((id) => id !== authorId)
+        : [...prev, authorId]
+    );
+  };
+
+  const handleCreatePost = async () => {
+    if (!newPostContent.trim()) return;
+
+    setCreating(true);
+    try {
+      // In production, this would call the API to create the post
+      console.log("Creating post:", { title: newPostTitle, content: newPostContent, pinned: newPostPinned });
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Reset form and close modal
+      setNewPostTitle("");
+      setNewPostContent("");
+      setNewPostPinned(false);
+      setShowCreateModal(false);
+
+      // Refresh the page to show new post
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to create post:", error);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const filteredPosts = posts.filter((post: NewsPost) => {
     const matchesSearch = post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.content.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === "all" || (filter === "pinned" && post.pinned);
+    const matchesPinned = filter === "pinned" ? post.pinned : true;
+    const matchesFollowing = filter === "following" ? true : true; // In production, filter by followed categories/authors
+    const matchesFilter = filter === "all" || matchesPinned || (filter === "following" && matchesFollowing);
     return matchesSearch && matchesFilter;
   });
 
@@ -36,14 +108,25 @@ export default function NewsPage() {
       <main className="ml-16 p-8">
         <FadeIn className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-medium text-[var(--text-primary)] mb-2 flex items-center gap-3">
-              <Newspaper className="w-7 h-7 text-[var(--accent-ember)]" />
-              Company News
-            </h1>
-            <p className="text-[var(--text-muted)]">
-              Stay updated with the latest company announcements and news
-            </p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-medium text-[var(--text-primary)] mb-2 flex items-center gap-3">
+                <Newspaper className="w-7 h-7 text-[var(--accent-ember)]" />
+                Company News
+              </h1>
+              <p className="text-[var(--text-muted)]">
+                Stay updated with the latest company announcements and news
+              </p>
+            </div>
+            <motion.button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-ember)] hover:bg-[var(--accent-ember-soft)] text-white transition-colors shadow-lg shadow-[var(--accent-ember)]/20"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Plus className="w-5 h-5" />
+              Create Post
+            </motion.button>
           </div>
 
           {/* Search and Filter */}
@@ -62,12 +145,101 @@ export default function NewsPage() {
               <Filter className="w-4 h-4 text-[var(--text-muted)]" />
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as "all" | "pinned")}
+                onChange={(e) => setFilter(e.target.value as "all" | "pinned" | "following")}
                 className="bg-transparent text-[var(--text-primary)] py-3 pr-2 outline-none cursor-pointer"
               >
                 <option value="all">All Posts</option>
                 <option value="pinned">Pinned Only</option>
+                <option value="following">Following</option>
               </select>
+            </div>
+          </div>
+
+          {/* Follow Categories & Authors Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Categories to Follow */}
+            <div className="bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] rounded-xl p-4">
+              <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-[var(--accent-ember)]" />
+                Follow Categories
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => {
+                  const isFollowing = followedCategories.includes(category.id);
+                  return (
+                    <motion.button
+                      key={category.id}
+                      onClick={() => toggleFollowCategory(category.id)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                        isFollowing
+                          ? "bg-emerald-500 text-white"
+                          : "border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {isFollowing ? (
+                        <UserCheck className="w-3.5 h-3.5" />
+                      ) : (
+                        <UserPlus className="w-3.5 h-3.5" />
+                      )}
+                      {category.name}
+                      {isFollowing && <span className="text-xs opacity-75">({category.postCount})</span>}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Authors to Follow */}
+            <div className="bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] rounded-xl p-4">
+              <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3 flex items-center gap-2">
+                <User className="w-4 h-4 text-[var(--accent-ember)]" />
+                Follow Authors
+              </h3>
+              <div className="space-y-2">
+                {authors.map((author) => {
+                  const isFollowing = followedAuthors.includes(author.id);
+                  return (
+                    <div
+                      key={author.id}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent-ember)] to-[var(--accent-copper)] flex items-center justify-center">
+                          <span className="text-white text-xs font-medium">{author.avatar}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-[var(--text-primary)]">{author.name}</p>
+                          <p className="text-xs text-[var(--text-muted)]">{author.role}</p>
+                        </div>
+                      </div>
+                      <motion.button
+                        onClick={() => toggleFollowAuthor(author.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs transition-colors ${
+                          isFollowing
+                            ? "bg-emerald-500 text-white"
+                            : "border border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
+                        }`}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {isFollowing ? (
+                          <>
+                            <UserCheck className="w-3 h-3" />
+                            Following
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-3 h-3" />
+                            Follow
+                          </>
+                        )}
+                      </motion.button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -138,6 +310,93 @@ export default function NewsPage() {
           )}
         </FadeIn>
       </main>
+
+      {/* Create Post Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] rounded-2xl w-full max-w-lg overflow-hidden"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)]">
+              <h2 className="text-lg font-medium text-[var(--text-primary)] flex items-center gap-2">
+                <Plus className="w-5 h-5 text-[var(--accent-ember)]" />
+                Create News Post
+              </h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 rounded-lg hover:bg-[var(--bg-slate)] text-[var(--text-muted)] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-2">
+                  Title (optional)
+                </label>
+                <input
+                  type="text"
+                  value={newPostTitle}
+                  onChange={(e) => setNewPostTitle(e.target.value)}
+                  placeholder="Enter a title..."
+                  className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-[var(--accent-ember)]/50 transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-[var(--text-muted)] mb-2">
+                  Content *
+                </label>
+                <textarea
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
+                  placeholder="What's the news?"
+                  rows={5}
+                  className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-4 py-2.5 text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:border-[var(--accent-ember)]/50 transition-colors resize-none"
+                />
+              </div>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newPostPinned}
+                  onChange={(e) => setNewPostPinned(e.target.checked)}
+                  className="w-4 h-4 rounded border-[var(--border-subtle)] text-[var(--accent-ember)] focus:ring-[var(--accent-ember)]"
+                />
+                <span className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                  <Pin className="w-4 h-4" />
+                  Pin this post
+                </span>
+              </label>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-4 border-t border-[var(--border-subtle)]">
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="px-4 py-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-slate)] transition-colors"
+              >
+                Cancel
+              </button>
+              <motion.button
+                onClick={handleCreatePost}
+                disabled={creating || !newPostContent.trim()}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-ember)] hover:bg-[var(--accent-ember-soft)] disabled:opacity-50 text-white transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {creating && <Loader2 className="w-4 h-4 animate-spin" />}
+                {creating ? "Posting..." : "Post"}
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

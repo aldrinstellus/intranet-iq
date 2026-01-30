@@ -1,6 +1,11 @@
 /**
  * Workflow Builder Constants
  * Node configurations, colors, and defaults for the workflow builder
+ *
+ * COLORS: These colors are also defined in @/lib/theme/colors.ts (WORKFLOW_NODES)
+ * Keep both in sync. The theme file is the single source of truth for color values.
+ *
+ * @see /docs/COLOR_SYSTEM.md for color usage guidelines
  */
 
 import {
@@ -141,9 +146,9 @@ export const NODE_TYPE_CONFIG: Record<WorkflowNodeType, NodeTypeConfig> = {
     label: 'Approval',
     description: 'Human-in-the-loop approval step',
     icon: UserCheck,
-    color: '#f97316', // Orange
-    bgColor: 'rgba(249, 115, 22, 0.15)',
-    borderColor: 'rgba(249, 115, 22, 0.4)',
+    color: '#14b8a6', // Teal (green family)
+    bgColor: 'rgba(20, 184, 166, 0.15)',
+    borderColor: 'rgba(20, 184, 166, 0.4)',
     handles: {
       inputs: [{ id: 'input', label: 'Input' }],
       outputs: [

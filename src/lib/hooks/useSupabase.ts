@@ -41,6 +41,7 @@ import {
   getUserSettings,
   updateUserSettings,
   logActivity,
+  branchThread,
 } from "../supabase";
 import type {
   ChatThread,
@@ -96,7 +97,32 @@ export function useChatThreads() {
     [user]
   );
 
-  return { threads, loading, error, createThread, setThreads };
+  const createBranch = useCallback(
+    async (parentThreadId: string, branchFromMessageId: string, llmModel = "claude-3") => {
+      if (!user) return null;
+      const result = await branchThread(user.id, parentThreadId, branchFromMessageId, llmModel);
+      if (!result) {
+        setError("Failed to create branch");
+        return null;
+      }
+      // Add the new thread to the list
+      setThreads((prev) => [result.thread, ...prev]);
+      return result;
+    },
+    [user]
+  );
+
+  // Check if a thread is a branch
+  const isBranch = useCallback((thread: ChatThread) => {
+    return !!(thread.metadata as Record<string, unknown>)?.parent_thread_id;
+  }, []);
+
+  // Get parent thread info for a branch
+  const getParentThreadId = useCallback((thread: ChatThread) => {
+    return (thread.metadata as Record<string, unknown>)?.parent_thread_id as string | undefined;
+  }, []);
+
+  return { threads, loading, error, createThread, createBranch, isBranch, getParentThreadId, setThreads };
 }
 
 export function useChatMessages(threadId: string | null) {
@@ -256,18 +282,26 @@ export function useSearch() {
 
         const data = await response.json();
 
-        const transformedResults: SearchResult[] = (data.results || []).map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          content: item.content,
-          summary: item.summary || item.highlights?.[0] || '',
-          type: item.type || 'article',
-          source: item.source || 'knowledge_base',
-          url: item.url,
-          score: item.score,
-          created_at: item.created_at,
-          metadata: item.metadata,
-        }));
+        const transformedResults: SearchResult[] = (data.results || []).map((item: any) => {
+          // Normalize relevance score to 0-1 range
+          // API returns relevanceScore as integer (0-100), or similarity as decimal (0-1)
+          const rawScore = item.relevanceScore || item.score || item.similarity || item.combined_score || 0;
+          const normalizedRelevance = rawScore > 1 ? rawScore / 100 : rawScore;
+
+          return {
+            id: item.id,
+            title: item.title,
+            content: item.content,
+            summary: item.summary || item.highlights?.[0] || '',
+            type: item.type || 'article',
+            source: item.source || 'knowledge_base',
+            url: item.url,
+            score: rawScore,
+            relevance: normalizedRelevance,
+            created_at: item.created_at,
+            metadata: item.metadata,
+          };
+        });
 
         setResults(transformedResults);
       } catch (err) {

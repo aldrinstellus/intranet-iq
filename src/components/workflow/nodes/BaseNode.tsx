@@ -3,10 +3,11 @@
 import { memo, useMemo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { motion } from "framer-motion";
-import { Settings, Trash2, GripVertical } from "lucide-react";
+import { Settings, Trash2, GripVertical, RefreshCw, Shield } from "lucide-react";
 import type { WorkflowNodeData, WorkflowNodeType } from "@/lib/workflow/types";
 import { NODE_TYPE_CONFIG } from "@/lib/workflow/constants";
 import { useWorkflowStore } from "@/lib/workflow/store";
+import { SEMANTIC } from "@/lib/theme";
 
 type BaseNodeProps = NodeProps & {
   data: WorkflowNodeData;
@@ -17,6 +18,10 @@ function BaseNodeComponent({ id, data, selected }: BaseNodeProps) {
 
   const config = useMemo(() => NODE_TYPE_CONFIG[data.type as WorkflowNodeType], [data.type]);
   const Icon = config?.icon;
+
+  // Check if error handling is configured
+  const hasRetryConfig = data.errorHandling?.retry?.enabled;
+  const hasFallbackConfig = data.errorHandling?.fallback?.onFailure !== 'stop' && data.errorHandling?.fallback?.onFailure;
 
   const handleSettings = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -158,6 +163,29 @@ function BaseNodeComponent({ id, data, selected }: BaseNodeProps) {
           <span className="text-[10px] text-[var(--text-muted)]">
             {data.isConfigured ? "Ready" : "Configure"}
           </span>
+
+          {/* Error Handling Badges */}
+          {(hasRetryConfig || hasFallbackConfig) && (
+            <div className="flex items-center gap-1 ml-auto">
+              {hasRetryConfig && (
+                <div
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-500/20 text-blue-400"
+                  title={`Retry: ${data.errorHandling?.retry?.maxAttempts} attempts`}
+                >
+                  <RefreshCw className="w-2.5 h-2.5" />
+                  <span>{data.errorHandling?.retry?.maxAttempts}</span>
+                </div>
+              )}
+              {hasFallbackConfig && (
+                <div
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber-500/20 text-amber-400"
+                  title={`On failure: ${data.errorHandling?.fallback?.onFailure}`}
+                >
+                  <Shield className="w-2.5 h-2.5" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -185,8 +213,8 @@ function BaseNodeComponent({ id, data, selected }: BaseNodeProps) {
             id="true"
             className="!w-3 !h-3 !rounded-full !border-2 !-bottom-1.5 transition-all hover:!scale-150 !cursor-crosshair"
             style={{
-              backgroundColor: "#22c55e",
-              borderColor: "#22c55e",
+              backgroundColor: SEMANTIC.success,
+              borderColor: SEMANTIC.success,
               left: "30%",
             }}
           />
@@ -202,8 +230,8 @@ function BaseNodeComponent({ id, data, selected }: BaseNodeProps) {
             id="false"
             className="!w-3 !h-3 !rounded-full !border-2 !-bottom-1.5 transition-all hover:!scale-150 !cursor-crosshair"
             style={{
-              backgroundColor: "#ef4444",
-              borderColor: "#ef4444",
+              backgroundColor: SEMANTIC.error,
+              borderColor: SEMANTIC.error,
               left: "70%",
             }}
           />
