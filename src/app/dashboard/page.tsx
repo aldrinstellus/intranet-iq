@@ -9,9 +9,9 @@ import {
   Layout, ChevronDown, X, CheckCircle2, Circle, AlertCircle, Bot,
   ArrowRight, ExternalLink, Flame, Zap, Star
 } from "lucide-react";
-import { useNewsPosts, useUpcomingEvents, useRecentActivity } from "@/lib/hooks/useSupabase";
+import { useRecentActivity } from "@/lib/hooks/useSupabase";
 import { useDashboardWidgets, DashboardWidget, LAYOUT_PRESETS, LayoutPresetKey } from "@/lib/hooks/useDashboardWidgets";
-import type { NewsPost, Event } from "@/lib/database.types";
+import { mockNewsPosts, mockEvents, type MockNewsPost, type MockEvent } from "@/lib/mockData";
 import Link from "next/link";
 import { MeetingCard } from "@/components/dashboard/MeetingCard";
 import { AppShortcutsBar } from "@/components/dashboard/AppShortcutsBar";
@@ -158,9 +158,11 @@ export default function Dashboard() {
     ? `Hello there`
     : "Hello there";
 
-  // Fetch real data from Supabase
-  const { posts: newsPosts, loading: postsLoading } = useNewsPosts({ limit: 5 });
-  const { events, loading: eventsLoading } = useUpcomingEvents({ limit: 3 });
+  // Use mock data for news and events to ensure consistent IDs
+  const newsPosts = mockNewsPosts.slice(0, 5);
+  const postsLoading = false;
+  const events = mockEvents.slice(0, 3);
+  const eventsLoading = false;
   const { activities, loading: activitiesLoading } = useRecentActivity(5);
 
   // Trending topics
@@ -514,7 +516,7 @@ export default function Dashboard() {
                     </div>
                   ) : newsPosts.length > 0 ? (
                     <div className="space-y-3">
-                      {newsPosts.slice(0, 4).map((post: NewsPost) => (
+                      {newsPosts.slice(0, 4).map((post: MockNewsPost) => (
                         <Link key={post.id} href={`/news/${post.id}`}>
                           <motion.div
                             className="p-3 rounded-lg hover:bg-[var(--bg-slate)] transition-colors cursor-pointer"
@@ -612,7 +614,7 @@ export default function Dashboard() {
                     </div>
                   ) : events.length > 0 ? (
                     <div className="space-y-3">
-                      {events.slice(0, 3).map((event: Event) => (
+                      {events.slice(0, 3).map((event: MockEvent) => (
                         <Link key={event.id} href={`/events/${event.id}`}>
                           <motion.div
                             className="p-3 rounded-lg hover:bg-[var(--bg-slate)] transition-colors cursor-pointer border-l-2 border-[var(--success)]"
