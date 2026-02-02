@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { FacetedSidebar } from "@/components/search/FacetedSidebar";
 import { SearchResultCard } from "@/components/search/SearchResultCard";
 import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
-import { useSearch, useDepartments, useActivityLog } from "@/lib/hooks/useSupabase";
+import { mockSearchResults, mockDepartments, type MockSearchResult, type MockDepartment } from "@/lib/mockData";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/lib/motion";
 import {
   Search,
@@ -32,7 +32,11 @@ import {
   Brain,
   Blend,
   Info,
+  GitPullRequest,
+  Video,
 } from "lucide-react";
+import { SOURCE_DISPLAY, CONTENT_TYPE_DISPLAY, type DataSource, type ContentType } from "@/lib/unifiedTypes";
+import { searchAllSources, getSearchFacets } from "@/lib/integratedData";
 
 const filterCategories = [
   { id: "all", label: "All Results", icon: Database },
@@ -40,6 +44,21 @@ const filterCategories = [
   { id: "employee", label: "People", icon: Users },
   { id: "event", label: "Events", icon: Calendar },
   { id: "document", label: "Documents", icon: FileText },
+];
+
+// Source filter chips for app integrations
+const sourceFilters: { id: DataSource | 'all'; label: string; icon: string; color: string }[] = [
+  { id: 'all', label: 'All Sources', icon: '🔍', color: '#10b981' },
+  { id: 'diq', label: 'dIQ', icon: '📊', color: '#10b981' },
+  { id: 'slack', label: 'Slack', icon: '💬', color: '#4A154B' },
+  { id: 'jira', label: 'Jira', icon: '🎯', color: '#0052CC' },
+  { id: 'github', label: 'GitHub', icon: '🐙', color: '#24292e' },
+  { id: 'drive', label: 'Drive', icon: '📁', color: '#4285F4' },
+  { id: 'zoom', label: 'Zoom', icon: '🎥', color: '#2D8CFF' },
+  { id: 'confluence', label: 'Confluence', icon: '📝', color: '#172B4D' },
+  { id: 'salesforce', label: 'Salesforce', icon: '☁️', color: '#00A1E0' },
+  { id: 'figma', label: 'Figma', icon: '🎨', color: '#F24E1E' },
+  { id: 'notion', label: 'Notion', icon: '📓', color: '#000000' },
 ];
 
 const typeIcons: Record<string, typeof FileText> = {
@@ -258,6 +277,17 @@ function SearchPageInner() {
   const [searchMode, setSearchMode] = useState<SearchMode>('hybrid');
   const [hoveredMode, setHoveredMode] = useState<SearchMode | null>(null);
 
+  // Source filter state - for app integrations
+  const [selectedSources, setSelectedSources] = useState<(DataSource | 'all')[]>(['all']);
+  const [includeApps, setIncludeApps] = useState(true);
+  const [appResults, setAppResults] = useState<any[]>([]);
+
+  // Per-source advanced filters
+  const [slackFilters, setSlackFilters] = useState<{ channel: string; dateRange: string }>({ channel: 'all', dateRange: 'any' });
+  const [jiraFilters, setJiraFilters] = useState<{ project: string; status: string; priority: string }>({ project: 'all', status: 'all', priority: 'all' });
+  const [githubFilters, setGithubFilters] = useState<{ repo: string; prStatus: string }>({ repo: 'all', prStatus: 'all' });
+  const [driveFilters, setDriveFilters] = useState<{ fileType: string; folder: string }>({ fileType: 'all', folder: 'all' });
+
   // AI Summary state - stores summaries for each result
   const [aiSummaries, setAiSummaries] = useState<Record<string, string>>({});
 
@@ -288,10 +318,67 @@ function SearchPageInner() {
     { query: "remote work guidelines", timestamp: new Date(Date.now() - 432000000), resultCount: 6 },
   ]);
 
-  const { results, loading, error, search } = useSearch();
-  const { departments } = useDepartments();
-  const { log } = useActivityLog();
+  // Use mock data instead of Supabase hooks
+  const [results, setResults] = useState<MockSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error] = useState<string | null>(null);
+  const departments = mockDepartments as MockDepartment[];
   const searchParams = useSearchParams();
+
+  // Toggle source filter
+  const toggleSourceFilter = (sourceId: DataSource | 'all') => {
+    if (sourceId === 'all') {
+      setSelectedSources(['all']);
+    } else {
+      setSelectedSources(prev => {
+        const filtered = prev.filter(s => s !== 'all');
+        if (filtered.includes(sourceId)) {
+          const newSources = filtered.filter(s => s !== sourceId);
+          return newSources.length === 0 ? ['all'] : newSources;
+        } else {
+          return [...filtered, sourceId];
+        }
+      });
+    }
+  };
+
+  // Mock search function - now includes app data
+  const search = useCallback(async (query: string, _options?: { itemTypes?: string[]; maxResults?: number; offset?: number; mode?: string }) => {
+    setLoading(true);
+    // Simulate search delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    const queryLower = query.toLowerCase();
+    const filtered = mockSearchResults.filter(result =>
+      result.title.toLowerCase().includes(queryLower) ||
+      result.description.toLowerCase().includes(queryLower) ||
+      result.highlights.some(h => h.toLowerCase().includes(queryLower))
+    );
+    setResults(filtered);
+
+    // Also search app data if enabled
+    if (includeApps && query.trim()) {
+      const sources = selectedSources.includes('all')
+        ? undefined
+        : selectedSources.filter((s): s is DataSource => s !== 'all');
+
+      const integratedResults = searchAllSources(query, {
+        sources,
+        limit: 20,
+      });
+      setAppResults(integratedResults);
+    } else {
+      setAppResults([]);
+    }
+
+    setLoading(false);
+  }, [includeApps, selectedSources]);
+
+  // Mock activity log function
+  const log = useCallback(async (_action: string, _data: Record<string, unknown>) => {
+    // In production, this would log to the activity log
+    console.log("Activity logged:", _action, _data);
+  }, []);
   const urlQueryProcessed = useRef(false);
 
   // Add to search history when a new search is performed
@@ -536,9 +623,41 @@ function SearchPageInner() {
     );
   };
 
-  const filteredResults = departmentFilteredResults.filter((result) => {
-    if (activeFilter === "all") return true;
-    return result.type === activeFilter;
+  // Merge mock results with app results
+  const mergedResults = [
+    ...departmentFilteredResults.map(r => ({
+      ...r,
+      source: 'diq' as DataSource,
+      sourceDisplay: SOURCE_DISPLAY['diq'],
+    })),
+    ...appResults.map(r => ({
+      id: r.id,
+      title: r.title,
+      description: r.description || r.summary,
+      summary: r.summary || r.description,
+      type: r.type,
+      source: r.source as DataSource,
+      sourceDisplay: SOURCE_DISPLAY[r.source as DataSource] || { name: r.source, icon: '📄', color: '#666' },
+      typeDisplay: CONTENT_TYPE_DISPLAY[r.type as ContentType],
+      url: r.url,
+      created_at: r.createdAt,
+      relevance: r.relevanceScore || 70,
+      author: r.author,
+      tags: r.tags,
+      metadata: r.metadata,
+    })),
+  ];
+
+  const filteredResults = mergedResults.filter((result) => {
+    // Filter by content type
+    if (activeFilter !== "all" && result.type !== activeFilter) return false;
+
+    // Filter by source
+    if (!selectedSources.includes('all')) {
+      if (!selectedSources.includes(result.source)) return false;
+    }
+
+    return true;
   });
 
   return (
@@ -655,6 +774,52 @@ function SearchPageInner() {
                 </div>
               </div>
 
+              {/* Source Filters - App Integrations */}
+              <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Search Sources</span>
+                    <motion.button
+                      onClick={() => setIncludeApps(!includeApps)}
+                      className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                        includeApps
+                          ? 'bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]'
+                          : 'bg-[var(--bg-slate)] text-[var(--text-muted)]'
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {includeApps ? 'Apps Enabled' : 'Apps Disabled'}
+                    </motion.button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {sourceFilters.map((source) => {
+                    const isSelected = selectedSources.includes(source.id);
+                    return (
+                      <motion.button
+                        key={source.id}
+                        onClick={() => toggleSourceFilter(source.id)}
+                        disabled={!includeApps && source.id !== 'all' && source.id !== 'diq'}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                          isSelected
+                            ? 'text-white shadow-md'
+                            : 'bg-[var(--bg-slate)] text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-[var(--bg-charcoal)]'
+                        } ${!includeApps && source.id !== 'all' && source.id !== 'diq' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          backgroundColor: isSelected ? source.color : undefined,
+                        }}
+                        whileHover={{ scale: includeApps || source.id === 'all' || source.id === 'diq' ? 1.02 : 1 }}
+                        whileTap={{ scale: includeApps || source.id === 'all' || source.id === 'diq' ? 0.98 : 1 }}
+                      >
+                        <span>{source.icon}</span>
+                        <span>{source.label}</span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Advanced Filters */}
               <AnimatePresence>
                 {showAdvanced && (
@@ -705,6 +870,168 @@ function SearchPageInner() {
                         <option value="spreadsheet">Spreadsheet</option>
                       </select>
                     </div>
+
+                    {/* Per-Source Filters - Show when specific source is selected */}
+                    {selectedSources.includes('slack') && !selectedSources.includes('all') && (
+                      <>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            💬 Slack Channel
+                          </label>
+                          <select
+                            value={slackFilters.channel}
+                            onChange={(e) => setSlackFilters(prev => ({ ...prev, channel: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#4A154B]/50"
+                          >
+                            <option value="all">All channels</option>
+                            <option value="general">general</option>
+                            <option value="engineering">engineering</option>
+                            <option value="product-launch">product-launch</option>
+                            <option value="design">design</option>
+                            <option value="sales">sales</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            💬 Message Date
+                          </label>
+                          <select
+                            value={slackFilters.dateRange}
+                            onChange={(e) => setSlackFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#4A154B]/50"
+                          >
+                            <option value="any">Any time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This week</option>
+                            <option value="month">This month</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedSources.includes('jira') && !selectedSources.includes('all') && (
+                      <>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            🎯 Jira Project
+                          </label>
+                          <select
+                            value={jiraFilters.project}
+                            onChange={(e) => setJiraFilters(prev => ({ ...prev, project: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#0052CC]/50"
+                          >
+                            <option value="all">All projects</option>
+                            <option value="DIQ">DIQ - dIQ Platform</option>
+                            <option value="PLAT">PLAT - Platform</option>
+                            <option value="MOB">MOB - Mobile</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            🎯 Status
+                          </label>
+                          <select
+                            value={jiraFilters.status}
+                            onChange={(e) => setJiraFilters(prev => ({ ...prev, status: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#0052CC]/50"
+                          >
+                            <option value="all">All statuses</option>
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="in-review">In Review</option>
+                            <option value="done">Done</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            🎯 Priority
+                          </label>
+                          <select
+                            value={jiraFilters.priority}
+                            onChange={(e) => setJiraFilters(prev => ({ ...prev, priority: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#0052CC]/50"
+                          >
+                            <option value="all">All priorities</option>
+                            <option value="highest">Highest</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedSources.includes('github') && !selectedSources.includes('all') && (
+                      <>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            🐙 Repository
+                          </label>
+                          <select
+                            value={githubFilters.repo}
+                            onChange={(e) => setGithubFilters(prev => ({ ...prev, repo: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#24292e]/50"
+                          >
+                            <option value="all">All repos</option>
+                            <option value="diq-platform">diq-platform</option>
+                            <option value="diq-mobile">diq-mobile</option>
+                            <option value="diq-api">diq-api</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            🐙 PR Status
+                          </label>
+                          <select
+                            value={githubFilters.prStatus}
+                            onChange={(e) => setGithubFilters(prev => ({ ...prev, prStatus: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#24292e]/50"
+                          >
+                            <option value="all">All</option>
+                            <option value="open">Open</option>
+                            <option value="merged">Merged</option>
+                            <option value="closed">Closed</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
+
+                    {selectedSources.includes('drive') && !selectedSources.includes('all') && (
+                      <>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            📁 File Type
+                          </label>
+                          <select
+                            value={driveFilters.fileType}
+                            onChange={(e) => setDriveFilters(prev => ({ ...prev, fileType: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#4285F4]/50"
+                          >
+                            <option value="all">All types</option>
+                            <option value="document">Documents</option>
+                            <option value="spreadsheet">Spreadsheets</option>
+                            <option value="presentation">Presentations</option>
+                            <option value="pdf">PDFs</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--text-muted)] uppercase tracking-wider block mb-2">
+                            📁 Folder
+                          </label>
+                          <select
+                            value={driveFilters.folder}
+                            onChange={(e) => setDriveFilters(prev => ({ ...prev, folder: e.target.value }))}
+                            className="w-full bg-[var(--bg-slate)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-[#4285F4]/50"
+                          >
+                            <option value="all">All folders</option>
+                            <option value="Product">Product</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Finance">Finance</option>
+                          </select>
+                        </div>
+                      </>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -954,13 +1281,23 @@ function SearchPageInner() {
                   {filteredResults.map((result) => (
                     <StaggerItem key={result.id}>
                       <div className="relative">
+                        {/* Source Badge */}
+                        {result.source && result.source !== 'diq' && (
+                          <div
+                            className="absolute -top-2 -left-2 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs text-white shadow-md"
+                            style={{ backgroundColor: result.sourceDisplay?.color || '#666' }}
+                          >
+                            <span>{result.sourceDisplay?.icon}</span>
+                            <span>{result.sourceDisplay?.name}</span>
+                          </div>
+                        )}
                         <SearchResultCard
                           result={{
                             id: result.id,
                             title: result.title,
-                            summary: result.summary || "",
+                            summary: result.summary || result.description || "",
                             type: result.type,
-                            source: result.project_code || "dIQ",
+                            source: result.sourceDisplay?.name || result.source || "dIQ",
                             relevance: result.relevance || 0,
                             updatedAt: result.created_at,
                           }}

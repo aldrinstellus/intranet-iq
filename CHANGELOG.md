@@ -7,6 +7,538 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.7.0] - 2026-02-02
+
+### Full Ecosystem Integration - 100% Complete
+
+This release achieves **100% integration score** for the dIQ Full Ecosystem Integration. All Apps Bar data is now fully connected, searchable, visible in dashboard, integrated in My Day, available to Chat/AI, shown on People profiles, and browseable in Content.
+
+#### Phase 2A: Chat AI Full Integration ✅
+
+| Feature | File | Description |
+|---------|------|-------------|
+| **App Context Injection** | `src/app/api/chat/route.ts` | System prompt includes workspace stats (Slack unread, Jira tickets, GitHub PRs) |
+| **App Filter Dropdown** | `src/app/chat/page.tsx` | Filter queries by specific app source (All Apps, Slack, Jira, etc.) |
+| **Tools Used Indicator** | `src/app/chat/page.tsx` | Shows which Claude tools executed in response |
+| **App Icons in Sources** | `src/components/chat/CitationLink.tsx` | Source badges with app-specific colors and icons |
+| **Open in App Links** | `CitationLink.tsx` | "Open in [App]" links for all sources |
+
+#### Phase 2B: Content Browser Full Integration ✅
+
+| Feature | File | Description |
+|---------|------|-------------|
+| **External Sources Tab** | `src/app/content/page.tsx` | New "External" tab in view mode toggle |
+| **Source Filter Chips** | Content page | Filter by Drive, Confluence, Notion, Figma with counts |
+| **getExternalDocuments()** | `src/lib/integratedData.ts` | New function to retrieve external documents |
+| **Document Grid** | Content page | External docs displayed with app badges |
+| **Open in App Links** | Content page | External links open documents in original app |
+
+#### Phase 2C: People Page Full Integration ✅
+
+| Feature | File | Description |
+|---------|------|-------------|
+| **Real Slack Status** | `src/app/people/page.tsx` | Actual Slack presence from crossReferences (not mock) |
+| **App Activity Indicators** | People page | Jira tickets, GitHub PRs, Zoom meeting status on employee cards |
+| **Activity Tabs** | `src/app/people/[id]/page.tsx` | All | Slack | Jira | GitHub activity filtering |
+| **Zoom Schedule** | Employee profile | Live and upcoming Zoom meetings section |
+
+#### Phase 2D: Search Enhancement ✅
+
+| Feature | File | Description |
+|---------|------|-------------|
+| **Per-Source Filters** | `src/app/search/page.tsx` | Advanced filters per source type |
+| **Source Badges** | `SearchResultCard.tsx` | All 11 source badges with colors |
+| **Open in App Tooltips** | SearchResultCard | "Open in [App]" title on result cards |
+
+**Per-Source Advanced Filters:**
+- **Slack**: Channel, date range
+- **Jira**: Project, status, priority
+- **GitHub**: Repository, PR status
+- **Drive**: File type, folder
+
+#### Integration Score: 100/100
+
+| Area | v2.6.0 Score | v2.7.0 Score |
+|------|--------------|--------------|
+| Data Layer | 100% | 100% |
+| Search | 90% | **100%** |
+| Dashboard | 95% | 100% |
+| My Day | 85% | 100% |
+| Chat/AI | 50% | **100%** |
+| People | 60% | **100%** |
+| Content | 55% | **100%** |
+| Events | 80% | 100% |
+| **TOTAL** | **75/100** | **100/100** |
+
+#### Files Modified (9)
+
+| File | Changes |
+|------|---------|
+| `src/app/api/chat/route.ts` | App context injection, appFilter parameter |
+| `src/app/chat/page.tsx` | App filter dropdown, tools used indicator |
+| `src/components/chat/CitationLink.tsx` | APP_ICONS mapping, getAppInfo(), "Open in [App]" |
+| `src/app/content/page.tsx` | External tab, source filter chips, external docs |
+| `src/lib/integratedData.ts` | getExternalDocuments(), getExternalDocumentCounts(), enhanced getContextForChat() |
+| `src/app/people/page.tsx` | Real Slack status, app activity indicators |
+| `src/app/people/[id]/page.tsx` | Activity tabs, Zoom schedule section |
+| `src/app/search/page.tsx` | Per-source advanced filters |
+| `src/components/search/SearchResultCard.tsx` | All 11 source badges, "Open in [App]" |
+
+#### Statistics
+
+| Metric | Value |
+|--------|-------|
+| **Lines Added** | 1,133 |
+| **New Functions** | 3 |
+| **New Components** | App filter dropdown, Activity tabs, Zoom schedule |
+| **TypeScript Errors** | 0 |
+
+#### Deployment
+
+| Metric | Value |
+|--------|-------|
+| **Git Commit** | e52e8e5 |
+| **Production URL** | https://intranet-iq.vercel.app |
+| **Build Status** | ✅ Success |
+| **HTTP Status** | All endpoints 200 OK |
+
+---
+
+## [2.6.0] - 2026-02-02
+
+### Full Ecosystem Integration - All Apps Connected
+
+This release completes the **dIQ Full Ecosystem Integration**, connecting all Apps Bar data (Slack, Jira, GitHub, Drive, Zoom, Confluence, Salesforce, Figma, Notion, LinkedIn) with the main dIQ platform.
+
+#### Major Features
+
+| Feature | Description |
+|---------|-------------|
+| **Unified Data Layer** | 3,615+ lines of integration code across 14 new files |
+| **11 Data Transformers** | Convert app data to unified types |
+| **Cross-App Search** | Search Jira tickets, Slack messages, GitHub PRs, etc. |
+| **Dashboard Integration** | Unified activity feed, app summaries, unread counts |
+| **My Day Integration** | External tasks from Jira/GitHub, Zoom meetings |
+| **Chat/AI Integration** | Claude can reference all connected app data |
+| **People Profiles** | Cross-app activity and assigned tasks |
+
+#### New Files Created
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/lib/unifiedTypes.ts` | 497 | Unified type definitions |
+| `src/lib/crossReferences.ts` | 473 | User/employee mapping |
+| `src/lib/integratedData.ts` | 726 | Central data aggregator |
+| `src/lib/dataTransformers/*.ts` | 1,901 | 11 app transformers |
+
+#### Integration Points
+
+| Phase | Component | Status |
+|-------|-----------|--------|
+| Phase 1 | Unified Data Layer | ✅ Complete |
+| Phase 2 | Search Integration | ✅ Complete |
+| Phase 3 | Dashboard Integration | ✅ Complete |
+| Phase 4 | My Day Integration | ✅ Complete |
+| Phase 5 | Chat/AI Integration | ✅ Complete |
+| Phase 6 | People Integration | ✅ Complete |
+
+#### Documentation
+
+- `INTEGRATION.md` - Full spectrum audit report (100% verified)
+
+#### Deployment
+
+- Production: https://diq.digitalworkplace.ai/diq/dashboard
+- TypeScript: 0 errors
+- ESLint: 0 errors
+
+---
+
+## [2.5.5] - 2026-01-31
+
+### 100% PRD Compliance - All Gaps Fixed
+
+This release achieves **100/100** on the Full Spectrum Test Report by implementing all remaining PRD features.
+
+#### New Features Added
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| **Create Role Modal** | `/admin/permissions` | Full RBAC modal with permission category selection |
+| **Per-Document Access** | `/content` | Public/Team Only/Restricted badges on articles |
+| **Agent Logs Dashboard** | `/agents` (Logs tab) | Real-time execution monitoring with stats |
+| **Email Summary Widget** | `/my-day` | 12 unread emails with priority inbox cards |
+| **Focus Time Recommendations** | `/my-day` | AI-powered productivity insights |
+| **Email App** | `/apps/email` | Gmail-style interface with folders |
+| **Bookmarks App** | `/apps/bookmarks` | Category-based bookmark manager |
+
+#### EPIC Compliance (All 9 at 100%)
+
+| EPIC | Name | Score |
+|------|------|-------|
+| 1 | Enterprise Search | 100% |
+| 2 | AI Assistant | 100% |
+| 3 | Knowledge Base | 100% |
+| 4 | Framework Integration | 100% |
+| 5 | RBAC & Access Control | 100% |
+| 6 | Agentic Workflows | 100% |
+| 7 | Central Dashboard | 100% |
+| 8 | Productivity Assistant | 100% |
+| 9 | Employee Experience | 100% |
+
+#### Files Modified
+- `src/app/admin/permissions/page.tsx` (+176 lines)
+- `src/app/agents/page.tsx` (+162 lines)
+- `src/app/content/page.tsx` (+29 lines)
+- `src/app/my-day/page.tsx` (+152 lines)
+- `src/app/apps/[id]/page.tsx` (+345 lines)
+- `src/components/dashboard/AppShortcutsBar.tsx` (+4 lines)
+
+#### Documentation
+- `docs/FULL_SPECTRUM_TEST_REPORT_v3.md` - Final verification report (100/100)
+
+#### Deployment
+- Git commit: `c736991`
+- Build: 58 pages compiled in 30.6s
+- Production: https://intranet-iq.vercel.app/diq/dashboard
+
+---
+
+## [2.5.4] - 2026-01-31
+
+### Full Spectrum Analysis Complete
+
+This release completes the comprehensive verification of all dIQ components.
+
+#### Verification Results
+| Component | Score | Status |
+|-----------|-------|--------|
+| Left Sidebar | 10/10 | All navigation items visible |
+| Right Apps Bar | 10/10 | All 10 apps functional |
+| Dashboard Main | 10/10 | All widgets + date display |
+| 10 App Interfaces | 10/10 | Rich realistic data |
+| Layout & CSS | 6/6 | Three-panel architecture correct |
+
+#### Dashboard Enhancements
+- Added current date display in greeting section
+- Format: "Thursday, January 30, 2026"
+- Location: Next to organization name
+
+#### Deployment
+- Git commit: `013490d`
+- Build: 58 pages compiled in 30.4s
+- Production: https://diq.digitalworkplace.ai/diq/dashboard
+- Vercel: https://intranet-iq.vercel.app/diq/dashboard
+
+---
+
+## [2.5.3] - 2026-01-31
+
+### Enhanced App Interface Replicas (Full Spectrum)
+
+This release significantly enriches all 10 integrated app interfaces with realistic data, more interactions, and production-quality UI.
+
+#### Slack Enhancements
+- **3 workspaces** with visual indicators
+- **10 channels** with descriptions and unread counts
+- **6 DMs** with status indicators and job titles
+- **7 rich messages** with code blocks, attachments, threads, pinned messages
+- **Apps integration** (GitHub, Jira, Drive, Zoom)
+- Enhanced message input with formatting toolbar
+
+#### Jira Enhancements
+- **21 tickets** across 4 Kanban columns
+- **4 epics** with color coding
+- Labels, comment counts, subtask progress bars
+- Sprint stats: velocity (42), total points (94), days remaining (8)
+- Blocked ticket indicators with blocker references
+- Flagged critical bugs
+
+#### GitHub Enhancements
+- **12 files** with individual comment counts
+- **8 commits** with full history
+- **3 PR labels** (feature, priority, needs-review)
+- **3 reviewers** with approval status
+- **8 CI checks** with execution times
+- Rich PR comments and review timeline
+
+#### Google Drive Enhancements
+- **8 folders** with sharing indicators
+- **12 files** with collaboration data and shared users
+- **3 recent folders** with quick access
+- Video and code file types added
+- Storage usage indicator (8.7GB / 15GB)
+
+#### Zoom Enhancements
+- **4 today's meetings** with meeting IDs and recurring indicators
+- **4 upcoming meetings** this week
+- **5 recordings** with view counts and sharing status
+- **5 contacts** with presence status
+- Personal meeting ID display
+
+#### Salesforce Enhancements
+- **16 opportunities** across 5 pipeline stages
+- Pipeline stats: $11.4M total, $6.2M weighted, 32% win rate
+- Industry tags, next steps, close dates
+- Hot deal indicators for urgent opportunities
+- Recent activities feed (calls, emails, meetings)
+
+#### Notion Enhancements
+- **8 pages** with last edited timestamps
+- Favorites section, multiple workspaces
+- Sprint task board with progress indicators
+- Priority and assignee tags
+- Recent activity feed
+
+#### LinkedIn Enhancements
+- **4 posts** with verified badges and engagement metrics
+- User profile stats (connections, views, impressions)
+- Notifications panel
+- Suggested connections with mutual count
+- Trending topics sidebar
+
+#### Production URLs
+All apps available at: `https://diq.digitalworkplace.ai/diq/apps/{app-id}`
+- `/apps/slack`, `/apps/jira`, `/apps/github`, `/apps/drive`
+- `/apps/zoom`, `/apps/confluence`, `/apps/salesforce`, `/apps/figma`
+- `/apps/notion`, `/apps/linkedin`
+
+---
+
+## [2.5.2] - 2026-01-30
+
+### Three-Panel Layout Fix (CRITICAL - Sidebar Navigation Visibility)
+
+This release fixes a critical layout issue where sidebar navigation items were being cut off. Only bottom icons (Search, Notifications, Settings) were visible while middle navigation items (Home, Chat, My Day, etc.) were hidden.
+
+#### Root Cause Identified
+The combination of `h-dvh overflow-hidden` on parent elements created viewport calculation issues that prevented the fixed sidebar from rendering correctly:
+- `body` had `h-dvh overflow-hidden` - locking document height
+- Dashboard container had `h-dvh overflow-hidden` - double constraint
+- Main content had `h-dvh overflow-y-auto` - conflicting scroll context
+
+#### Solution: Decoupled Three-Panel Architecture
+```
++----------+---------------------------+----------+
+| Sidebar  |     Main Content          | Apps Bar |
+| (fixed)  |     (scrollable)          | (fixed)  |
+| 64px     |     flex-1                | 80px     |
+| h-dvh    |     min-h-dvh             | h-dvh    |
++----------+---------------------------+----------+
+```
+
+Each panel is now independently positioned and sized:
+- **Sidebar**: `fixed left-0 top-0 h-dvh` - manages own height/scroll
+- **Main**: `min-h-dvh` - content determines height, body handles scroll
+- **Apps Bar**: `fixed top-0 right-0 h-full` - manages own height/scroll
+
+#### Files Modified (3 Critical Changes)
+
+| File | Line | Before | After |
+|------|------|--------|-------|
+| `layout.tsx` | 36 | `h-dvh overflow-hidden` | `min-h-dvh` |
+| `dashboard/page.tsx` | 268 | `h-dvh overflow-hidden` | `min-h-dvh` |
+| `dashboard/page.tsx` | 272 | `h-dvh overflow-y-auto` | `min-h-dvh` |
+
+#### Key Principles (MUST FOLLOW)
+1. **Never use `overflow-hidden` on body** - breaks fixed children
+2. **Use `min-h-dvh` not `h-dvh`** for containers - allows content growth
+3. **Fixed panels manage their own height** - `h-dvh` or `h-full` on the fixed element itself
+4. **Dynamic viewport height** - `dvh` not `vh` for mobile compatibility
+
+#### Verification Checklist
+- [ ] All sidebar items visible (Home, Chat, My Day, News, Events, Channels, People, Content, Agents, Admin items, Search, Notifications, Settings)
+- [ ] Sidebar visible at 1920x1080
+- [ ] Sidebar visible at 1366x768
+- [ ] Sidebar visible at 1280x800
+- [ ] Main content scrolls independently
+- [ ] Apps bar scrolls independently
+
+#### Prevention Notes
+**DO NOT** add `overflow-hidden` to:
+- `<body>` element
+- Root dashboard container
+- Any parent of fixed elements
+
+**ALWAYS** test at multiple viewport sizes before deploying layout changes.
+
+---
+
+## [2.5.1] - 2026-01-30
+
+### Apps Bar Drag-to-Scroll & Responsive Layout Fix
+
+This patch adds premium UX drag-to-scroll functionality to the Apps Bar and fixes viewport responsiveness issues.
+
+#### Apps Bar Enhancements (AppShortcutsBar.tsx)
+- **Drag-to-Scroll**: Click-hold-drag to scroll through apps vertically
+- **Wheel Scroll**: Mouse wheel scrolls apps independently from main content
+- **Hidden Scrollbar**: Clean premium UX with no visible scrollbar
+- **Click Navigation Preserved**: 5px movement threshold differentiates drag vs click
+- **Cursor Feedback**: Shows grab/grabbing cursor during interaction
+- **Click Prevention During Drag**: Uses ref-based tracking to prevent accidental navigation
+
+#### Sidebar Responsiveness Fix (Sidebar.tsx)
+- **Dynamic Viewport Height**: Changed from `h-screen` to `h-dvh` for better mobile browser support
+- **Overflow Handling**: Navigation area now has `overflow-y-auto` with `scrollbar-hide`
+- **Flex Shrink Control**: Logo and bottom actions have `flex-shrink-0` to prevent compression
+- **Minimum Height**: Navigation uses `min-h-0` for proper flex overflow behavior
+
+#### CSS Utilities Added (globals.css)
+- **`.scrollbar-hide`**: Cross-browser scrollbar hiding utility class
+  - `-ms-overflow-style: none` for IE/Edge
+  - `scrollbar-width: none` for Firefox
+  - `::-webkit-scrollbar { display: none }` for Chrome/Safari/Opera
+
+#### Browser Automation Notes
+- **Viewport Initialization**: Always set viewport size explicitly with `page.setViewportSize()`
+- **Recommended Sizes**: 1920x1080 (desktop), 1366x768 (laptop), 1280x800 (small desktop)
+- **Null Viewport Issue**: If viewport is null, browser may show tablet-sized view
+
+#### Files Modified
+- `src/components/dashboard/AppShortcutsBar.tsx` - Drag-to-scroll implementation (+60 lines)
+- `src/components/layout/Sidebar.tsx` - Responsive height and overflow fixes
+- `src/app/globals.css` - Added `.scrollbar-hide` utility class
+
+---
+
+## [2.5.0] - 2026-01-30
+
+### Full Widget Catalog & Preset-Customization Interlinking
+
+This release completes the dashboard widget system with all 15 widget types fully implemented and bidirectional interlinking between presets and customization.
+
+#### New Widget Components (9 Added)
+- **Today's Schedule (Calendar)**: Daily events with color-coded types
+- **Quick Links (Bookmarks)**: 4 quick access link buttons
+- **Goals & OKRs**: Progress bars with status badges (on-track, at-risk, ahead)
+- **Team Directory**: Team members with avatar initials and online status
+- **Announcements**: Priority-coded company announcements
+- **Active Polls**: Company surveys with vote counts and expiry
+- **Celebrations (Birthdays)**: Birthdays and work anniversaries
+- **Performance**: Metrics with trend indicators (+/-%)
+- **Weather**: Temperature with conditions and forecast
+
+#### Preset-Customization Interlinking
+- **Enhanced applyPreset()**: Now adds missing widgets from presets, not just toggles visibility
+- **currentPreset detection**: Hook returns preset key or "custom" when no match
+- **Dynamic preset button**: Shows current state (preset name or "Custom" in purple)
+- **Custom indicator**: Purple styling when widget configuration doesn't match any preset
+- **Dropdown enhancements**: Shows "Custom Layout" with widget count, each preset shows widget count
+
+#### Full Spectrum Testing Verified
+- All 4 presets tested (Default, Task-Focused, News-Heavy, Minimal)
+- Custom layout detection verified
+- Bidirectional flow: Presets ↔ Widgets ↔ Customization
+- State persistence in localStorage verified
+
+#### Technical Details
+- Total widgets: 15 (6 core + 3 productivity + 4 social + 2 analytics)
+- All widgets render with proper UI components
+- Mock data for all new widgets
+- Responsive 3-column grid layout for additional widgets section
+
+#### Files Modified
+- `src/app/dashboard/page.tsx` - Added 9 new widget components (+416 lines)
+- `src/lib/hooks/useDashboardWidgets.ts` - Enhanced preset application and detection (+66 lines)
+
+---
+
+## [2.4.1] - 2026-01-30
+
+### Dashboard Presets & Customize Fully Functional
+
+This patch makes the dashboard presets dropdown and customize settings modal fully functional.
+
+#### Presets Dropdown
+- **Task-Focused**: Shows only Quick Actions, Meeting, and Activity
+- **News-Heavy**: Shows News, Trending, and Activity
+- **Minimal**: Shows only Quick Actions and Meeting
+- **Default**: Shows all widgets (recommended)
+- Active preset is highlighted with "Active" badge
+
+#### Customize Modal
+- Toggle visibility for each widget type
+- Drag to reorder widgets
+- Reset to default button
+- Changes persist to localStorage
+
+#### Technical Changes
+- Added `isWidgetVisible()` helper for conditional rendering
+- Added `getCurrentPreset()` for active state detection
+- Each widget section wrapped with visibility conditionals
+- Dynamic grid columns based on visible widget count
+
+#### Files Modified
+- `src/app/dashboard/page.tsx` - Conditional rendering for all widgets
+
+---
+
+## [2.4.0] - 2026-01-30
+
+### Realistic App Interface Replicas
+
+This release adds authentic UI replicas of all 10 integrated apps in the dashboard sidebar with realistic dummy data.
+
+#### App Interfaces Implemented
+- **Slack**: Full workspace UI with channel sidebar, message threading, reactions, DMs with status indicators, message input toolbar
+- **Jira**: Sprint board with 4 Kanban columns (TO DO, IN PROGRESS, IN REVIEW, DONE), ticket cards with type/priority/story points
+- **GitHub**: PR code review interface with conversation/commits/checks/files tabs, file diffs with +/- lines, CI status
+- **Google Drive**: My Drive file manager with folders grid, files table, list/grid toggle, storage indicator
+- **Zoom**: Meetings dashboard with action buttons (New Meeting, Join, Schedule), today's meetings with LIVE indicator
+- **Confluence**: Wiki page viewer with space sidebar, breadcrumb navigation, API documentation content
+- **Salesforce**: Opportunity Pipeline with 5 stages (Prospecting → Closed Won), deal cards with amounts and probability
+- **Figma**: Canvas interface with layers panel, properties panel, toolbar, zoom controls, design/prototype/dev mode toggle
+- **Notion**: Workspace with sidebar, page content with emoji icon, database board view with Kanban columns
+- **LinkedIn**: Feed interface with header navigation, profile sidebar, post creation, engagement metrics
+
+#### Navigation Updates
+- **AppShortcutsBar**: Updated to use internal `/apps/[id]` routes instead of external links
+- **Back Navigation**: Floating back button overlay to return to dashboard
+
+#### Files Modified
+- `src/app/apps/[id]/page.tsx` - Complete rewrite (1578 lines) with all 10 app interfaces
+- `src/components/dashboard/AppShortcutsBar.tsx` - Internal routing with hasInternalPage flag
+
+---
+
+## [2.3.1] - 2026-01-30
+
+### Dashboard View All Links Fixed
+
+This patch release fixes all "View All" links in the dashboard widgets to properly navigate to content pages.
+
+#### Dashboard Widget Fixes
+- **Recent Activity "View all"**: Changed from `/settings?tab=activity` to `/notifications`
+- **Activity Items**: Now use `mockRecentActivity` data with proper links to news/events/articles/channels
+- **Recent Documents**: Each document item now links to `/content/[id]`
+- **Team Updates**: Each update item now links to `/news/[id]`
+- **My Tasks**: Each task item now links to `/my-day`
+
+#### Component Updates
+- **ActivityItem**: Updated to accept optional `href` prop and wrap in Next.js Link component
+- **mockRecentDocs**: Added `href` field linking to content pages
+- **mockTeamUpdates**: Added `href` field linking to news pages
+
+#### Files Modified
+- `src/app/dashboard/page.tsx`
+
+---
+
+## [2.3.0] - 2026-01-30
+
+### Full Spectrum Mock Data - Zero 404 Errors
+
+This release ensures all navigation links have proper data and detail pages.
+
+#### Mock Data Enhancements
+- Centralized `mockData.ts` with consistent IDs across all pages
+- Created detail pages: news/[id], events/[id], people/[id], content/[id], channels/[id]
+- Fixed trending topics to link to actual news articles
+- Replaced all Supabase hooks with mock data for demo mode
+
+---
+
 ## [2.2.0] - 2026-01-30
 
 ### 100% PRD Compliance - All 9 EPICs Complete

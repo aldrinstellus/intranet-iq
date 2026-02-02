@@ -12,6 +12,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateEmbedding } from '@/lib/embeddings';
+import { getContextForChat } from '@/lib/integratedData';
+import { SOURCE_DISPLAY } from '@/lib/unifiedTypes';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -52,6 +54,29 @@ const tools = [
     },
   },
   {
+    name: 'search_connected_apps',
+    description: 'Search across connected workplace apps like Slack messages, Jira tickets, GitHub pull requests, Google Drive files, Confluence pages, etc.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        query: {
+          type: 'string',
+          description: 'The search query to find relevant information',
+        },
+        sources: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional: filter by specific sources (e.g., ["slack", "jira", "github"])',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of results to return (default: 5)',
+        },
+      },
+      required: ['query'],
+    },
+  },
+  {
     name: 'get_employee_info',
     description: 'Look up information about an employee by name, email, or department',
     input_schema: {
@@ -64,6 +89,25 @@ const tools = [
         department: {
           type: 'string',
           description: 'Department to filter by',
+        },
+      },
+      required: [] as string[],
+    },
+  },
+  {
+    name: 'get_recent_activity',
+    description: 'Get recent activity from connected apps (Slack messages, Jira updates, GitHub PRs, etc.)',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        sources: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional: filter by specific sources (e.g., ["slack", "jira"])',
+        },
+        limit: {
+          type: 'number',
+          description: 'Maximum number of activities to return (default: 5)',
         },
       },
       required: [] as string[],
@@ -322,6 +366,30 @@ async function getRAGContext(query: string, limit: number = 5): Promise<Source[]
   }
 }
 
+// Enhanced RAG: combines KB context with app data context
+async function getEnhancedRAGContext(query: string, limit: number = 5): Promise<{
+  kbSources: Source[];
+  appSources: Source[];
+}> {
+  // Get KB sources
+  const kbSources = await getRAGContext(query, limit);
+
+  // Get app context
+  const appContext = getContextForChat(query);
+
+  // Convert app items to Source format
+  const appSources: Source[] = appContext.relevantItems.slice(0, limit).map(item => ({
+    id: item.id,
+    type: item.type,
+    title: item.title,
+    url: item.url,
+    relevance: (item.relevanceScore || 70) / 100,
+    content: item.description || item.content?.slice(0, 500) || '',
+  }));
+
+  return { kbSources, appSources };
+}
+
 // Execute tool calls
 async function executeTool(
   toolName: string,
@@ -340,6 +408,56 @@ async function executeTool(
       return sources.map((s, i) =>
         `${i + 1}. **${s.title}** (${s.type})\n   ${s.content?.slice(0, 200)}...\n   Link: ${s.url}`
       ).join('\n\n');
+    }
+
+    case 'search_connected_apps': {
+      const query = toolInput.query as string;
+      const sources = toolInput.sources as string[] | undefined;
+      const limit = (toolInput.limit as number) || 5;
+
+      // Get context from connected apps
+      const appContext = getContextForChat(query);
+
+      // Filter by sources if specified
+      let relevantItems = appContext.relevantItems;
+      if (sources && sources.length > 0) {
+        relevantItems = relevantItems.filter(item =>
+          sources.includes(item.source)
+        );
+      }
+
+      if (relevantItems.length === 0) {
+        return `No relevant information found in connected apps${sources ? ` (${sources.join(', ')})` : ''}.`;
+      }
+
+      return relevantItems.slice(0, limit).map((item, i) => {
+        const sourceLabel = SOURCE_DISPLAY[item.source]?.name || item.source;
+        return `${i + 1}. **[${sourceLabel}]** ${item.title}\n   ${item.description?.slice(0, 150) || 'No description'}...\n   ${item.url ? `Link: ${item.url}` : ''}`;
+      }).join('\n\n');
+    }
+
+    case 'get_recent_activity': {
+      const sources = toolInput.sources as string[] | undefined;
+      const limit = (toolInput.limit as number) || 5;
+
+      // Get activity from connected apps
+      const appContext = getContextForChat('');
+
+      let activities = appContext.recentActivity;
+      if (sources && sources.length > 0) {
+        activities = activities.filter(activity =>
+          sources.includes(activity.source)
+        );
+      }
+
+      if (activities.length === 0) {
+        return `No recent activity found${sources ? ` from ${sources.join(', ')}` : ''}.`;
+      }
+
+      return activities.slice(0, limit).map((activity, i) => {
+        const sourceLabel = SOURCE_DISPLAY[activity.source]?.name || activity.source;
+        return `${i + 1}. **[${sourceLabel}]** ${activity.title}\n   ${activity.description || ''}\n   ${activity.createdAt ? `Time: ${new Date(activity.createdAt).toLocaleString()}` : ''}`;
+      }).join('\n\n');
     }
 
     case 'get_employee_info': {
@@ -390,8 +508,62 @@ async function executeTool(
   }
 }
 
-// Build system prompt based on response style
-function buildSystemPrompt(style: string, sources: Source[]): string {
+// Build system prompt based on response style with full app context
+function buildSystemPrompt(
+  style: string,
+  sources: Source[],
+  includeAppContext: boolean = true,
+  appContext?: ReturnType<typeof getContextForChat>
+): string {
+  // Build dynamic app context summary
+  let connectedAppsInfo = '';
+
+  if (includeAppContext) {
+    const appStatsInfo = appContext ? `
+
+CURRENT WORKSPACE STATUS:
+- Slack: ${appContext.appContext.slack.unreadCount} unread messages across ${appContext.appContext.slack.channels} channels
+- Jira: ${appContext.appContext.jira.assigned} tickets assigned (${appContext.appContext.jira.inProgress} in progress)
+- GitHub: ${appContext.appContext.github.openPRs} open PRs, ${appContext.appContext.github.pendingReviews} pending reviews
+- Zoom: ${appContext.appContext.zoom.upcoming} upcoming meetings${appContext.appContext.zoom.inMeeting ? ' (currently in meeting)' : ''}
+- Drive: ${appContext.appContext.drive.recent} recent files
+- Confluence: ${appContext.appContext.confluence.updated} recently updated pages
+- Salesforce: $${(appContext.appContext.salesforce.pipeline / 1000).toFixed(0)}K pipeline value
+- Figma: ${appContext.appContext.figma.projects} active projects
+- Notion: ${appContext.appContext.notion.pages} workspace pages
+` : '';
+
+    const recentActivityInfo = appContext && appContext.recentActivity.length > 0 ? `
+
+RECENT ACTIVITY (last 24 hours):
+${appContext.recentActivity.slice(0, 5).map(a => `- [${SOURCE_DISPLAY[a.source]?.name || a.source}] ${a.title}`).join('\n')}
+` : '';
+
+    connectedAppsInfo = `
+
+You have access to connected workplace apps:
+- **Slack**: Search messages and channels for discussions and decisions
+- **Jira**: Look up tickets, issues, and project status
+- **GitHub**: Find pull requests, code changes, and repository information
+- **Google Drive**: Search documents and files
+- **Confluence**: Find wiki pages and documentation
+- **Zoom**: Check meeting schedules
+- **Salesforce**: Look up customer and deal information
+- **Figma**: Find design files and projects
+- **Notion**: Search workspace pages
+${appStatsInfo}${recentActivityInfo}
+Use the search_connected_apps tool when users ask about:
+- Recent discussions (Slack)
+- Project status or tickets (Jira)
+- Code changes or PRs (GitHub)
+- Specific files or documents (Drive, Confluence)
+- Meeting schedules (Zoom)
+
+IMPORTANT: When citing sources from connected apps, always indicate which app the information came from.
+For example: "According to a Slack message in #engineering..." or "Based on Jira ticket DIQ-123..."
+`;
+  }
+
   const basePrompt = `You are an AI assistant for a company intranet called dIQ (Intranet IQ). You help employees find information, answer questions about company policies, and provide assistance with work-related queries.
 
 Your knowledge is grounded in the company's knowledge base. When answering questions:
@@ -399,7 +571,8 @@ Your knowledge is grounded in the company's knowledge base. When answering quest
 2. If you're not sure about something, say so
 3. Provide actionable information when possible
 4. Keep responses professional but friendly
-
+5. When referencing data from connected apps, always indicate the source app
+${connectedAppsInfo}
 `;
 
   const styleInstructions: Record<string, string> = {
@@ -466,6 +639,7 @@ export async function POST(request: NextRequest) {
       model = 'claude-sonnet-4-20250514',
       responseStyle = 'balanced',
       enableToolUse = true,
+      appFilter = 'all', // Filter search results by app source
     } = await request.json();
 
     if (!message) {
@@ -492,6 +666,16 @@ export async function POST(request: NextRequest) {
       duration: Date.now() - ragStartTime,
     });
 
+    // Step 3: Get enhanced app context for AI (filtered by app if specified)
+    const appContextStartTime = Date.now();
+    const appContext = getContextForChat(message, { appFilter: appFilter as any });
+    steps.push({
+      id: '3',
+      name: appFilter !== 'all' ? `Loading ${appFilter} context` : 'Loading app context',
+      status: 'completed',
+      duration: Date.now() - appContextStartTime,
+    });
+
     // Check if Anthropic API key is configured
     if (process.env.ANTHROPIC_API_KEY) {
       try {
@@ -500,10 +684,10 @@ export async function POST(request: NextRequest) {
           apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
-        // Build system prompt with RAG context and response style
-        const systemPrompt = buildSystemPrompt(responseStyle, sources);
+        // Build system prompt with RAG context, response style, and app context
+        const systemPrompt = buildSystemPrompt(responseStyle, sources, true, appContext);
 
-        // Step 3: Generate response with Claude
+        // Step 4: Generate response with Claude
         const llmStartTime = Date.now();
 
         // Initial API call with tool support
@@ -516,7 +700,7 @@ export async function POST(request: NextRequest) {
         });
 
         steps.push({
-          id: '3',
+          id: '4',
           name: 'LLM initial response',
           status: 'completed',
           duration: Date.now() - llmStartTime,

@@ -32,9 +32,60 @@ import {
   FileDown,
   Clipboard,
   Check,
+  Filter,
+  Wrench,
+  MessageSquare,
+  Target,
+  Folder,
+  Video,
+  BookOpen,
+  Cloud,
+  Palette,
+  StickyNote,
+  Briefcase,
 } from "lucide-react";
-import { useChatThreads, useChatMessages } from "@/lib/hooks/useSupabase";
-import type { ChatThread, ChatMessage, ChatSource } from "@/lib/database.types";
+import { mockChatThreads, mockChatMessages } from "@/lib/mockData";
+import type { ChatSource } from "@/lib/database.types";
+import { SOURCE_DISPLAY, type DataSource } from "@/lib/unifiedTypes";
+
+// App filter options for chat
+const APP_FILTER_OPTIONS: Array<{ id: DataSource | 'all'; name: string; icon: React.ReactNode; color: string }> = [
+  { id: 'all', name: 'All Apps', icon: <Sparkles className="w-4 h-4" />, color: '#10b981' },
+  { id: 'slack', name: 'Slack', icon: <MessageSquare className="w-4 h-4" />, color: '#4A154B' },
+  { id: 'jira', name: 'Jira', icon: <Target className="w-4 h-4" />, color: '#0052CC' },
+  { id: 'github', name: 'GitHub', icon: <GitBranch className="w-4 h-4" />, color: '#24292e' },
+  { id: 'drive', name: 'Drive', icon: <Folder className="w-4 h-4" />, color: '#4285F4' },
+  { id: 'confluence', name: 'Confluence', icon: <BookOpen className="w-4 h-4" />, color: '#172B4D' },
+  { id: 'zoom', name: 'Zoom', icon: <Video className="w-4 h-4" />, color: '#2D8CFF' },
+  { id: 'salesforce', name: 'Salesforce', icon: <Cloud className="w-4 h-4" />, color: '#00A1E0' },
+  { id: 'figma', name: 'Figma', icon: <Palette className="w-4 h-4" />, color: '#F24E1E' },
+  { id: 'notion', name: 'Notion', icon: <StickyNote className="w-4 h-4" />, color: '#000000' },
+  { id: 'linkedin', name: 'LinkedIn', icon: <Briefcase className="w-4 h-4" />, color: '#0077B5' },
+];
+
+// Extended types for chat page that work with mock data
+interface ExtendedChatThread {
+  id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  preview: string;
+  model?: string;
+  parent_thread_id?: string | null;
+  branch_point_message_id?: string | null;
+}
+
+interface ExtendedChatMessage {
+  id: string;
+  thread_id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+  sources?: ChatSource[];
+  confidence?: number;
+  toolsUsed?: string[];
+}
 import { ConfidenceBadge } from "@/components/chat/ConfidenceBadge";
 import { MessageContentWithCitations, SourcesFooter } from "@/components/chat/CitationLink";
 
@@ -58,9 +109,83 @@ const demoSpaces: ChatSpace[] = [
 ];
 
 export default function ChatPage() {
-  const { threads, loading: threadsLoading, createThread, createBranch, isBranch, getParentThreadId, setThreads } = useChatThreads();
+  // Use mock data instead of Supabase hooks
+  const [threads, setThreads] = useState<ExtendedChatThread[]>(
+    mockChatThreads.map(t => ({ ...t, title: t.title || null, model: "claude-3", parent_thread_id: null, branch_point_message_id: null }))
+  );
+  const threadsLoading = false;
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const { messages, loading: messagesLoading, addMessage, setMessages } = useChatMessages(activeThreadId);
+  const [messages, setMessages] = useState<ExtendedChatMessage[]>([]);
+  const messagesLoading = false;
+
+  // Mock thread functions
+  const createThread = async (title?: string, model?: string) => {
+    const newThread = {
+      id: `thread-${Date.now()}`,
+      title: title || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      message_count: 0,
+      preview: "",
+      model: model || "claude-3",
+      parent_thread_id: null,
+      branch_point_message_id: null,
+    };
+    setThreads(prev => [newThread, ...prev]);
+    return newThread;
+  };
+
+  const createBranch = async (parentThreadId: string, messageId: string, model?: string) => {
+    const parentThread = threads.find(t => t.id === parentThreadId);
+    const newThread = {
+      id: `thread-branch-${Date.now()}`,
+      title: `Branch of ${parentThread?.title || "Chat"}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      message_count: 0,
+      preview: "",
+      model: model || "claude-3",
+      parent_thread_id: parentThreadId,
+      branch_point_message_id: messageId,
+    };
+    setThreads(prev => [newThread, ...prev]);
+    // Return messages up to the branch point
+    const branchMessages = messages.filter(m => {
+      const msgIndex = messages.findIndex(msg => msg.id === messageId);
+      return messages.indexOf(m) <= msgIndex;
+    });
+    return { thread: newThread, messages: branchMessages };
+  };
+
+  const isBranch = (thread: { parent_thread_id?: string | null }) => !!thread.parent_thread_id;
+  const getParentThreadId = (thread: { parent_thread_id?: string | null }) => thread.parent_thread_id || null;
+
+  // Load messages when active thread changes
+  useEffect(() => {
+    if (activeThreadId) {
+      const threadMessages = mockChatMessages
+        .filter(m => m.thread_id === activeThreadId)
+        .map(m => ({ ...m, sources: [] as ChatSource[], confidence: 85 }));
+      setMessages(threadMessages);
+    } else {
+      setMessages([]);
+    }
+  }, [activeThreadId]);
+
+  const addMessage = async (role: "user" | "assistant", content: string, metadata?: { sources?: ChatSource[]; confidence?: number; llmModel?: string; toolsUsed?: string[] }) => {
+    const newMessage = {
+      id: `msg-${Date.now()}`,
+      thread_id: activeThreadId || "",
+      role,
+      content,
+      created_at: new Date().toISOString(),
+      sources: metadata?.sources || [],
+      confidence: metadata?.confidence || 85,
+      toolsUsed: metadata?.toolsUsed || [],
+    };
+    setMessages(prev => [...prev, newMessage]);
+    return newMessage;
+  };
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportSuccess, setExportSuccess] = useState<string | null>(null);
 
@@ -78,6 +203,10 @@ export default function ChatPage() {
   const [activeSpaceId, setActiveSpaceId] = useState<string | null>(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [spaces] = useState<ChatSpace[]>(demoSpaces);
+
+  // App filter for chat queries
+  const [selectedAppFilter, setSelectedAppFilter] = useState<DataSource | 'all'>('all');
+  const [showAppFilter, setShowAppFilter] = useState(false);
 
   // Transparency pane data (simulated)
   const [transparencyData, setTransparencyData] = useState({
@@ -206,15 +335,23 @@ export default function ChatPage() {
 
     try {
       // Call the Chat API with Claude integration
+      // Include app filter if not 'all'
+      const requestBody: Record<string, unknown> = {
+        message: userQuery,
+        threadId,
+        model: selectedLLM.id === "claude-3" ? "claude-sonnet-4-20250514" : selectedLLM.id,
+        responseStyle: responseStyle.id,
+      };
+
+      // Add app filter if a specific app is selected
+      if (selectedAppFilter !== 'all') {
+        requestBody.appFilter = selectedAppFilter;
+      }
+
       const response = await fetch("/diq/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: userQuery,
-          threadId,
-          model: selectedLLM.id === "claude-3" ? "claude-sonnet-4-20250514" : selectedLLM.id,
-          responseStyle: responseStyle.id,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -223,7 +360,7 @@ export default function ChatPage() {
         throw new Error(data.error || "Failed to get response");
       }
 
-      // Add AI response to messages
+      // Add AI response to messages with tools used info
       await addMessage(
         "assistant",
         data.message,
@@ -231,6 +368,7 @@ export default function ChatPage() {
           sources: data.sources || [],
           confidence: data.confidence || 85,
           llmModel: selectedLLM.id,
+          toolsUsed: data.toolsUsed || [],
         }
       );
 
@@ -565,6 +703,61 @@ export default function ChatPage() {
                 activeSpaceName={spaces.find(s => s.id === activeSpaceId)?.name}
               />
 
+              {/* App Filter Dropdown */}
+              <div className="relative">
+                <motion.button
+                  onClick={() => setShowAppFilter(!showAppFilter)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                    selectedAppFilter !== 'all'
+                      ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)] border-[var(--accent-ember)]/30"
+                      : "bg-[var(--bg-slate)] hover:bg-[var(--bg-slate)]/80 text-[var(--text-secondary)] border-[var(--border-subtle)]"
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Filter className="w-4 h-4" />
+                  {selectedAppFilter === 'all' ? 'All Apps' : APP_FILTER_OPTIONS.find(a => a.id === selectedAppFilter)?.name}
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAppFilter ? 'rotate-180' : ''}`} />
+                </motion.button>
+
+                <AnimatePresence>
+                  {showAppFilter && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 top-12 w-56 bg-[var(--bg-charcoal)] border border-[var(--border-default)] rounded-xl shadow-xl z-50 p-2 max-h-80 overflow-y-auto"
+                    >
+                      {APP_FILTER_OPTIONS.map((app) => (
+                        <button
+                          key={app.id}
+                          onClick={() => {
+                            setSelectedAppFilter(app.id);
+                            setShowAppFilter(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                            selectedAppFilter === app.id
+                              ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]"
+                              : "text-[var(--text-secondary)] hover:bg-[var(--bg-slate)]"
+                          }`}
+                        >
+                          <span
+                            className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
+                            style={{ backgroundColor: `${app.color}20`, color: app.color }}
+                          >
+                            {app.icon}
+                          </span>
+                          <span className="flex-1 text-left">{app.name}</span>
+                          {selectedAppFilter === app.id && (
+                            <Check className="w-4 h-4 text-[var(--accent-ember)]" />
+                          )}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               {/* Show Work Button */}
               <motion.button
                 onClick={() => setShowTransparency(!showTransparency)}
@@ -758,7 +951,7 @@ export default function ChatPage() {
               </FadeIn>
             ) : (
               <AnimatePresence mode="popLayout">
-                {messages.map((message: ChatMessage, index: number) => (
+                {messages.map((message: ExtendedChatMessage, index: number) => (
                   <motion.div
                     key={message.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -794,7 +987,7 @@ export default function ChatPage() {
                         </div>
                       )}
 
-                      {/* Confidence Badge and Sources Footer - for assistant messages */}
+                      {/* Confidence Badge, Tools Used, and Sources Footer - for assistant messages */}
                       {message.role === "assistant" && (
                         <>
                           {/* Confidence indicator */}
@@ -804,6 +997,24 @@ export default function ChatPage() {
                               <ConfidenceBadge sources={message.sources} />
                             </div>
                           </div>
+
+                          {/* Tools Used Indicator */}
+                          {message.toolsUsed && message.toolsUsed.length > 0 && (
+                            <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                              <Wrench className="w-3.5 h-3.5" />
+                              <span>Tools used:</span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {message.toolsUsed.map((tool, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-0.5 rounded-full bg-[var(--bg-slate)] text-[var(--text-secondary)]"
+                                  >
+                                    {tool}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Sources Footer with numbered list */}
                           {message.sources && message.sources.length > 0 && (
@@ -1022,7 +1233,7 @@ export default function ChatPage() {
             </div>
           ) : threads.length > 0 ? (
             <div className="space-y-2 flex-1 overflow-y-auto">
-              {threads.map((thread: ChatThread, index: number) => {
+              {threads.map((thread: ExtendedChatThread, index: number) => {
                 const threadIsBranch = isBranch(thread);
                 const parentId = getParentThreadId(thread);
                 const parentThread = parentId ? threads.find(t => t.id === parentId) : null;

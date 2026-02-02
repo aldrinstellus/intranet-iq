@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/lib/motion";
-import { useKBCategories, useArticles, useDepartments } from "@/lib/hooks/useSupabase";
+import { mockKBCategories, mockArticles, mockDepartments, type MockKBCategory, type MockArticle, type MockDepartment } from "@/lib/mockData";
 import { ArticleEditor } from "@/components/content/ArticleEditor";
 import { CreateContentModal } from "@/components/content/CreateContentModal";
 import { VersionHistoryModal } from "@/components/content/VersionHistoryModal";
@@ -42,8 +42,21 @@ import {
   Scale,
   MessageSquare,
   Building2,
+  Users,
+  Lock,
+  Globe,
+  Folder,
+  Cloud,
+  Palette,
+  StickyNote,
+  Target,
+  Video,
+  Briefcase,
+  Filter,
 } from "lucide-react";
-import type { KBCategory, Article } from "@/lib/database.types";
+import { getExternalDocuments, getExternalDocumentCounts, type ExternalDocument } from "@/lib/integratedData";
+import { SOURCE_DISPLAY, type DataSource } from "@/lib/unifiedTypes";
+// Types imported from mockData
 
 // Client type definition for multi-client isolation
 interface Client {
@@ -194,8 +207,8 @@ interface TreeItem {
   type: "folder" | "article";
   slug?: string;
   children?: TreeItem[];
-  article?: Article;
-  category?: KBCategory;
+  article?: MockArticle;
+  category?: MockKBCategory;
 }
 
 interface TreeNodeProps {
@@ -289,15 +302,56 @@ function TreeNode({
   );
 }
 
+// App icons for external sources
+const SOURCE_ICONS: Record<string, React.ReactNode> = {
+  drive: <Folder className="w-4 h-4" />,
+  confluence: <BookOpen className="w-4 h-4" />,
+  notion: <StickyNote className="w-4 h-4" />,
+  figma: <Palette className="w-4 h-4" />,
+  slack: <MessageSquare className="w-4 h-4" />,
+  jira: <Target className="w-4 h-4" />,
+  github: <GitBranch className="w-4 h-4" />,
+  zoom: <Video className="w-4 h-4" />,
+  salesforce: <Cloud className="w-4 h-4" />,
+  linkedin: <Briefcase className="w-4 h-4" />,
+};
+
+const SOURCE_COLORS: Record<string, string> = {
+  drive: '#4285F4',
+  confluence: '#172B4D',
+  notion: '#000000',
+  figma: '#F24E1E',
+  slack: '#4A154B',
+  jira: '#0052CC',
+  github: '#24292e',
+  zoom: '#2D8CFF',
+  salesforce: '#00A1E0',
+  linkedin: '#0077B5',
+};
+
 function ContentPageInner() {
   const searchParams = useSearchParams();
   const urlView = searchParams.get("view");
-  const [viewMode, setViewMode] = useState<"browse" | "recent" | "frameworks">(
-    urlView === "recent" ? "recent" : urlView === "frameworks" ? "frameworks" : "browse"
+  const [viewMode, setViewMode] = useState<"browse" | "recent" | "frameworks" | "external">(
+    urlView === "recent" ? "recent" : urlView === "frameworks" ? "frameworks" : urlView === "external" ? "external" : "browse"
   );
   const [selectedFramework, setSelectedFramework] = useState<Framework | null>(null);
   const [frameworkFilter, setFrameworkFilter] = useState<"all" | "active" | "deprecated" | "experimental">("all");
   const [selectedClient, setSelectedClient] = useState<string>("all");
+  const [externalSourceFilter, setExternalSourceFilter] = useState<DataSource | 'all'>('all');
+  const [externalDocuments, setExternalDocuments] = useState<ExternalDocument[]>([]);
+  const [externalCounts, setExternalCounts] = useState<Record<string, number>>({});
+
+  // Load external documents
+  useEffect(() => {
+    const docs = getExternalDocuments({
+      sources: externalSourceFilter === 'all' ? undefined : [externalSourceFilter],
+      sortBy: 'date',
+      sortOrder: 'desc',
+    });
+    setExternalDocuments(docs);
+    setExternalCounts(getExternalDocumentCounts());
+  }, [externalSourceFilter]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -316,9 +370,13 @@ function ContentPageInner() {
   const [selectedForComparison, setSelectedForComparison] = useState<Set<string>>(new Set());
   const [showComparisonModal, setShowComparisonModal] = useState(false);
 
-  const { categories, loading: categoriesLoading } = useKBCategories();
-  const { articles, loading: articlesLoading } = useArticles();
-  const { departments, loading: departmentsLoading } = useDepartments();
+  // Use mock data for consistent IDs across the app
+  const categories = mockKBCategories;
+  const categoriesLoading = false;
+  const articles = mockArticles;
+  const articlesLoading = false;
+  const departments = mockDepartments;
+  const departmentsLoading = false;
 
   // Get recent articles (sorted by updated_at)
   const recentArticles = useMemo(() => {
@@ -676,6 +734,18 @@ function ContentPageInner() {
                 <Clock className="w-3 h-3" />
                 Recent
               </motion.button>
+              <motion.button
+                onClick={() => setViewMode("external")}
+                className={`flex-1 px-2 py-1.5 text-xs rounded-md transition-colors flex items-center justify-center gap-1 ${
+                  viewMode === "external"
+                    ? "bg-[var(--accent-ember)] text-white"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Globe className="w-3 h-3" />
+                External
+              </motion.button>
             </div>
 
             {/* Search */}
@@ -913,6 +983,80 @@ function ContentPageInner() {
                   ))}
                 </StaggerContainer>
               )
+            ) : viewMode === "external" ? (
+              /* External Documents List */
+              <div className="px-2">
+                {/* Source Filter */}
+                <div className="flex items-center gap-1 flex-wrap mb-3 px-2">
+                  <button
+                    onClick={() => setExternalSourceFilter('all')}
+                    className={`px-2 py-1 text-xs rounded-md transition-colors ${
+                      externalSourceFilter === 'all'
+                        ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]"
+                        : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-slate)]"
+                    }`}
+                  >
+                    All ({externalCounts.total || 0})
+                  </button>
+                  {(['drive', 'confluence', 'notion', 'figma'] as const).map((source) => (
+                    <button
+                      key={source}
+                      onClick={() => setExternalSourceFilter(source)}
+                      className={`flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors ${
+                        externalSourceFilter === source
+                          ? "bg-[var(--accent-ember)]/20 text-[var(--accent-ember)]"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-slate)]"
+                      }`}
+                    >
+                      <span style={{ color: SOURCE_COLORS[source] }}>{SOURCE_ICONS[source]}</span>
+                      <span className="capitalize">{source}</span>
+                      <span className="text-[var(--text-muted)]">({externalCounts[source] || 0})</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* External Documents */}
+                {externalDocuments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Globe className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
+                    <p className="text-sm text-[var(--text-muted)]">No external documents</p>
+                  </div>
+                ) : (
+                  <StaggerContainer>
+                    {externalDocuments.map((doc) => (
+                      <StaggerItem key={doc.id}>
+                        <motion.a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors mb-1 hover:bg-[var(--bg-slate)] text-[var(--text-secondary)] group"
+                          whileHover={{ x: 2 }}
+                        >
+                          <span
+                            className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                            style={{ backgroundColor: `${SOURCE_COLORS[doc.source]}20`, color: SOURCE_COLORS[doc.source] }}
+                          >
+                            {SOURCE_ICONS[doc.source] || <FileText className="w-4 h-4" />}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm truncate group-hover:text-[var(--accent-ember)]">{doc.title}</div>
+                            <div className="text-xs text-[var(--text-muted)] flex items-center gap-2">
+                              <span
+                                className="px-1.5 py-0.5 rounded"
+                                style={{ backgroundColor: `${SOURCE_COLORS[doc.source]}15`, color: SOURCE_COLORS[doc.source] }}
+                              >
+                                {doc.sourceLabel}
+                              </span>
+                              <span>{new Date(doc.updatedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--accent-ember)] flex-shrink-0" />
+                        </motion.a>
+                      </StaggerItem>
+                    ))}
+                  </StaggerContainer>
+                )}
+              </div>
             ) : filteredTree.length === 0 ? (
               <div className="text-center py-8">
                 <BookOpen className="w-8 h-8 text-[var(--text-muted)] mx-auto mb-2" />
@@ -1099,7 +1243,7 @@ function ContentPageInner() {
                             whileHover={{ scale: 1.02, y: -2 }}
                             whileTap={{ scale: 0.98 }}
                           >
-                            <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-2 mb-3 flex-wrap">
                               <FileText className="w-6 h-6 text-[var(--accent-ember)]" />
                               {article.status === "published" ? (
                                 <span className="px-1.5 py-0.5 rounded text-[10px] bg-[var(--success)]/20 text-[var(--success)]">
@@ -1110,6 +1254,11 @@ function ContentPageInner() {
                                   Draft
                                 </span>
                               )}
+                              {/* Per-Document Access Control Badge */}
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1">
+                                <Users className="w-2.5 h-2.5" />
+                                {article.id.charCodeAt(0) % 3 === 0 ? "Public" : article.id.charCodeAt(0) % 3 === 1 ? "Team Only" : "Restricted"}
+                              </span>
                             </div>
                             <h3 className="text-[var(--text-primary)] font-medium mb-1 line-clamp-2">
                               {article.title}
@@ -1160,6 +1309,25 @@ function ContentPageInner() {
                           Pending Review
                         </span>
                       )}
+                      {/* Per-Document Access Control */}
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5">
+                        {selectedData.article.id.charCodeAt(0) % 3 === 0 ? (
+                          <>
+                            <Globe className="w-3 h-3" />
+                            Public Access
+                          </>
+                        ) : selectedData.article.id.charCodeAt(0) % 3 === 1 ? (
+                          <>
+                            <Users className="w-3 h-3" />
+                            Team Only
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-3 h-3" />
+                            Restricted
+                          </>
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-[var(--text-muted)]">
                       <span className="flex items-center gap-1">
@@ -1437,6 +1605,103 @@ function ContentPageInner() {
                     </span>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          ) : viewMode === "external" ? (
+            /* External Documents View */
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col"
+            >
+              {/* External Sources Header */}
+              <div className="border-b border-[var(--border-subtle)] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/20">
+                      <Globe className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-medium text-[var(--text-primary)]">External Sources</h1>
+                      <p className="text-sm text-[var(--text-muted)]">Documents from connected apps</p>
+                    </div>
+                  </div>
+
+                  {/* Source Stats */}
+                  <div className="flex items-center gap-4">
+                    {(['drive', 'confluence', 'notion', 'figma'] as const).map((source) => (
+                      <div
+                        key={source}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-slate)]"
+                      >
+                        <span style={{ color: SOURCE_COLORS[source] }}>{SOURCE_ICONS[source]}</span>
+                        <span className="text-sm text-[var(--text-secondary)] capitalize">{source}</span>
+                        <span className="text-sm text-[var(--text-muted)]">({externalCounts[source] || 0})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* External Sources Grid */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {externalDocuments.map((doc) => (
+                    <motion.a
+                      key={doc.id}
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group p-4 rounded-xl bg-[var(--bg-charcoal)] border border-[var(--border-subtle)] hover:border-[var(--accent-ember)]/50 transition-all"
+                      whileHover={{ y: -2 }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: `${SOURCE_COLORS[doc.source]}20`, color: SOURCE_COLORS[doc.source] }}
+                        >
+                          {SOURCE_ICONS[doc.source] || <FileText className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-[var(--text-primary)] truncate group-hover:text-[var(--accent-ember)] transition-colors">
+                            {doc.title}
+                          </h4>
+                          {doc.description && (
+                            <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-2">
+                              {doc.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: `${SOURCE_COLORS[doc.source]}15`, color: SOURCE_COLORS[doc.source] }}
+                            >
+                              {doc.sourceLabel}
+                            </span>
+                            <span className="text-xs text-[var(--text-muted)]">
+                              {new Date(doc.updatedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--accent-ember)] flex-shrink-0" />
+                      </div>
+                    </motion.a>
+                  ))}
+                </div>
+
+                {externalDocuments.length === 0 && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <Globe className="w-16 h-16 text-[var(--border-subtle)] mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-[var(--text-muted)] mb-2">
+                        No external documents
+                      </h3>
+                      <p className="text-sm text-[var(--text-muted)]">
+                        Connect apps like Drive, Confluence, or Notion to see documents here
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           ) : (

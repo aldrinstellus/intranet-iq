@@ -38,17 +38,66 @@ READ: /Users/aldrin-mac-mini/digitalworkplace.ai/apps/intranet-iq/SAVEPOINT.md
 - Remind user to commit git changes
 
 ---
+## ⛔ CRITICAL: LAYOUT MODIFICATION WARNING
+---
+
+**BEFORE MODIFYING ANY LAYOUT CSS, READ THIS:**
+
+The dIQ dashboard uses a **three-panel architecture** (Sidebar + Main + Apps Bar).
+
+### FORBIDDEN Patterns - NEVER ADD:
+```css
+/* These BREAK sidebar visibility */
+body { overflow-hidden; }           /* ⛔ BREAKS */
+body { h-dvh overflow-hidden; }     /* ⛔ BREAKS */
+.container { overflow-hidden; }     /* ⛔ BREAKS */
+```
+
+### Required Pattern:
+```tsx
+// layout.tsx - body
+<body className="min-h-dvh bg-[var(--bg-obsidian)]">
+
+// dashboard/page.tsx - container
+<div className="min-h-dvh bg-[var(--bg-obsidian)]">
+
+// dashboard/page.tsx - main
+<main className="ml-16 mr-20 min-h-dvh p-6">
+```
+
+### Why:
+- `overflow-hidden` on parent elements clips fixed children
+- Sidebar uses `fixed` positioning with `h-dvh`
+- When parent has `overflow-hidden`, sidebar items get cut off
+
+**Full documentation:** SAVEPOINT.md → "THREE-PANEL LAYOUT ARCHITECTURE"
+
+---
 ## PROJECT OVERVIEW
 ---
 
 **dIQ (Intranet IQ)** is an AI-powered internal knowledge network - part of the Digital Workplace AI product suite.
 
-**Version:** 2.1.0 (PRD Compliance Enhancements)
+**Version:** 2.7.0 (Full Ecosystem Integration - 100% Complete)
 **Audit Score:** 100/100
+**Integration Status:** 100% (11 Apps Connected - Chat AI, Content, People, Search all enhanced)
 **Design System:** Midnight Green (emerald/teal accents)
-**Production:** https://diq.digitalworkplace.ai/diq/dashboard
+**Production:** https://intranet-iq.vercel.app/diq/dashboard
 **Cache Prevention:** ✅ Configured
 **Session Management:** Full Spectrum (SAVEPOINT.md is master reference)
+
+### Full Ecosystem Integration (v2.7.0)
+All Apps Bar data is now fully connected with 100% integration score:
+- **Slack** - Messages, channels searchable
+- **Jira** - Tickets as tasks in My Day
+- **GitHub** - PRs as tasks in My Day
+- **Drive** - Files searchable
+- **Zoom** - Meetings in unified calendar
+- **Confluence** - Pages searchable
+- **Salesforce** - Opportunities searchable
+- **Figma** - Projects searchable
+- **Notion** - Pages searchable
+- **LinkedIn** - Notifications searchable
 
 ### Brand Identity
 - **Logo:** Bold "d" + regular "IQ" + green dot (all on same baseline)
@@ -285,6 +334,33 @@ time curl -s http://localhost:3001/diq/api/content | jq '.articles | length'
 # dIQ:      http://localhost:3001/diq/dashboard
 ```
 
+### Browser Automation (Playwright/Dev-Browser)
+**CRITICAL: Always set viewport size explicitly to avoid responsive layout issues.**
+
+```typescript
+// ALWAYS set viewport before navigating
+await page.setViewportSize({ width: 1920, height: 1080 });
+await page.goto("http://localhost:3001/diq/dashboard");
+
+// Verify dimensions
+const dimensions = await page.evaluate(() => ({
+  innerWidth: window.innerWidth,
+  innerHeight: window.innerHeight
+}));
+```
+
+**Common viewport sizes:**
+| Size | Width | Height | Use Case |
+|------|-------|--------|----------|
+| Desktop | 1920 | 1080 | Full HD monitor |
+| Laptop | 1366 | 768 | Standard laptop |
+| Small | 1280 | 800 | Smaller screens |
+
+**Issue Prevention:**
+- If viewport is `null`, browser shows tablet-sized view
+- Always call `setViewportSize()` before `goto()`
+- Use `h-dvh` (not `h-screen`) for dynamic viewport height
+
 ---
 ## PERFORMANCE OPTIMIZATION (v0.7.0)
 ---
@@ -438,5 +514,5 @@ docker compose -f docker-compose.elasticsearch.yml up -d
 *Part of Digital Workplace AI Product Suite*
 *Location: /Users/aldrin-mac-mini/digitalworkplace.ai/apps/intranet-iq*
 *Repository: https://github.com/aldrinstellus/digitalworkplace.ai*
-*Version: 2.1.0*
-*Last Updated: January 29, 2026*
+*Version: 2.6.0*
+*Last Updated: January 31, 2026 @ 1:45 AM*
