@@ -4,41 +4,43 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, ChevronDown, Plus, Settings, X, Trash2, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { AppIcon } from "@/components/icons/AppIcons";
 
 interface AppShortcut {
   id: string;
   name: string;
-  icon: string;
   url: string;
   color: string;
+  isExternal?: boolean;
+  customIcon?: string; // For user-added custom apps (emoji fallback)
 }
 
-// Default app shortcuts - Updated with Ember-themed colors
+// Default app shortcuts - Uses internal /diq/apps/[id] routes with proper SVG icons
 const defaultApps: AppShortcut[] = [
-  { id: "drive", name: "Google Drive", icon: "📁", url: "https://drive.google.com", color: "bg-amber-500/20" },
-  { id: "slack", name: "Slack", icon: "💬", url: "https://slack.com", color: "bg-[var(--accent-ember)]/20" },
-  { id: "zoom", name: "Zoom", icon: "🎥", url: "https://zoom.us", color: "bg-orange-500/20" },
-  { id: "confluence", name: "Confluence", icon: "📝", url: "https://confluence.atlassian.com", color: "bg-orange-600/20" },
-  { id: "jira", name: "Jira", icon: "🎯", url: "https://jira.atlassian.com", color: "bg-amber-400/20" },
-  { id: "salesforce", name: "Salesforce", icon: "☁️", url: "https://salesforce.com", color: "bg-[var(--accent-gold)]/20" },
-  { id: "linkedin", name: "LinkedIn", icon: "💼", url: "https://linkedin.com", color: "bg-orange-700/20" },
-  { id: "github", name: "GitHub", icon: "🐙", url: "https://github.com", color: "bg-[var(--bg-slate)]" },
-  { id: "notion", name: "Notion", icon: "📓", url: "https://notion.so", color: "bg-[var(--border-default)]" },
-  { id: "figma", name: "Figma", icon: "🎨", url: "https://figma.com", color: "bg-[var(--accent-copper)]/20" },
+  { id: "drive", name: "Google Drive", url: "/diq/apps/drive", color: "bg-amber-500/20" },
+  { id: "slack", name: "Slack", url: "/diq/apps/slack", color: "bg-[var(--accent-ember)]/20" },
+  { id: "zoom", name: "Zoom", url: "/diq/apps/zoom", color: "bg-blue-500/20" },
+  { id: "confluence", name: "Confluence", url: "/diq/apps/confluence", color: "bg-blue-600/20" },
+  { id: "jira", name: "Jira", url: "/diq/apps/jira", color: "bg-blue-500/20" },
+  { id: "salesforce", name: "Salesforce", url: "/diq/apps/salesforce", color: "bg-sky-500/20" },
+  { id: "linkedin", name: "LinkedIn", url: "/diq/apps/linkedin", color: "bg-blue-700/20" },
+  { id: "github", name: "GitHub", url: "/diq/apps/github", color: "bg-[var(--bg-slate)]" },
+  { id: "notion", name: "Notion", url: "/diq/apps/notion", color: "bg-[var(--border-default)]" },
+  { id: "figma", name: "Figma", url: "/diq/apps/figma", color: "bg-purple-500/20" },
 ];
 
 // Available apps to add (not in default list)
 const availableAppsToAdd: AppShortcut[] = [
-  { id: "teams", name: "Microsoft Teams", icon: "👥", url: "https://teams.microsoft.com", color: "bg-orange-500/20" },
-  { id: "outlook", name: "Outlook", icon: "📧", url: "https://outlook.com", color: "bg-amber-500/20" },
-  { id: "dropbox", name: "Dropbox", icon: "📦", url: "https://dropbox.com", color: "bg-[var(--accent-ember)]/20" },
-  { id: "asana", name: "Asana", icon: "✅", url: "https://asana.com", color: "bg-[var(--accent-copper)]/20" },
-  { id: "trello", name: "Trello", icon: "📋", url: "https://trello.com", color: "bg-orange-600/20" },
-  { id: "monday", name: "Monday.com", icon: "📊", url: "https://monday.com", color: "bg-[var(--accent-ember)]/20" },
-  { id: "airtable", name: "Airtable", icon: "🗃️", url: "https://airtable.com", color: "bg-amber-400/20" },
-  { id: "miro", name: "Miro", icon: "🖼️", url: "https://miro.com", color: "bg-[var(--accent-gold)]/20" },
-  { id: "hubspot", name: "HubSpot", icon: "🧡", url: "https://hubspot.com", color: "bg-orange-500/20" },
-  { id: "zendesk", name: "Zendesk", icon: "💚", url: "https://zendesk.com", color: "bg-[var(--success)]/20" },
+  { id: "teams", name: "Microsoft Teams", url: "/diq/apps/teams", color: "bg-purple-600/20" },
+  { id: "outlook", name: "Outlook", url: "https://outlook.com", color: "bg-blue-500/20", isExternal: true },
+  { id: "dropbox", name: "Dropbox", url: "/diq/apps/dropbox", color: "bg-blue-600/20" },
+  { id: "asana", name: "Asana", url: "/diq/apps/asana", color: "bg-rose-500/20" },
+  { id: "trello", name: "Trello", url: "/diq/apps/trello", color: "bg-blue-500/20" },
+  { id: "monday", name: "Monday.com", url: "https://monday.com", color: "bg-[var(--accent-ember)]/20", isExternal: true },
+  { id: "airtable", name: "Airtable", url: "https://airtable.com", color: "bg-amber-400/20", isExternal: true },
+  { id: "miro", name: "Miro", url: "https://miro.com", color: "bg-amber-500/20", isExternal: true },
+  { id: "hubspot", name: "HubSpot", url: "https://hubspot.com", color: "bg-orange-500/20", isExternal: true },
+  { id: "zendesk", name: "Zendesk", url: "https://zendesk.com", color: "bg-emerald-500/20", isExternal: true },
 ];
 
 const STORAGE_KEY = "diq-app-shortcuts";
@@ -163,8 +165,8 @@ export function AppShortcutsBar() {
                 <motion.a
                   key={app.id}
                   href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target={app.isExternal ? "_blank" : undefined}
+                  rel={app.isExternal ? "noopener noreferrer" : undefined}
                   className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-[var(--bg-slate)] transition-colors group"
                   title={app.name}
                   initial={{ opacity: 0, y: 20 }}
@@ -174,12 +176,16 @@ export function AppShortcutsBar() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <motion.div
-                    className={`w-10 h-10 rounded-xl ${app.color} flex items-center justify-center text-lg`}
+                    className={`w-10 h-10 rounded-xl ${app.color} flex items-center justify-center`}
                     whileHover={{
                       boxShadow: "0 4px 20px rgba(16, 185, 129, 0.2)",
                     }}
                   >
-                    {app.icon}
+                    {app.customIcon ? (
+                      <span className="text-lg">{app.customIcon}</span>
+                    ) : (
+                      <AppIcon appId={app.id} size={24} />
+                    )}
                   </motion.div>
                   <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] truncate w-full text-center transition-colors">
                     {app.name.length > 8 ? app.name.slice(0, 7) + "…" : app.name}
@@ -314,8 +320,9 @@ function AddAppModal({
       id: `custom-${Date.now()}`,
       name: customName.trim(),
       url: url,
-      icon: customIcon,
+      customIcon: customIcon,
       color: "bg-[var(--bg-slate)]",
+      isExternal: true,
     };
     onAdd(customApp);
     setCustomName("");
@@ -376,8 +383,8 @@ function AddAppModal({
                       whileHover={!isAdded ? { scale: 1.02 } : undefined}
                       whileTap={!isAdded ? { scale: 0.98 } : undefined}
                     >
-                      <div className={`w-8 h-8 rounded-lg ${app.color} flex items-center justify-center text-base`}>
-                        {app.icon}
+                      <div className={`w-8 h-8 rounded-lg ${app.color} flex items-center justify-center`}>
+                        <AppIcon appId={app.id} size={20} />
                       </div>
                       <span className="text-sm text-[var(--text-secondary)] truncate flex-1">{app.name}</span>
                       {isAdded && <Check className="w-4 h-4 text-[var(--success)]" />}
@@ -577,8 +584,12 @@ function ManageAppsModal({
                   </div>
 
                   {/* App Info */}
-                  <div className={`w-8 h-8 rounded-lg ${app.color} flex items-center justify-center text-base`}>
-                    {app.icon}
+                  <div className={`w-8 h-8 rounded-lg ${app.color} flex items-center justify-center`}>
+                    {app.customIcon ? (
+                      <span className="text-base">{app.customIcon}</span>
+                    ) : (
+                      <AppIcon appId={app.id} size={20} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[var(--text-primary)] truncate">{app.name}</p>
