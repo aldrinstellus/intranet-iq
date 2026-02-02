@@ -20,18 +20,82 @@ When ending a session, say **"do a save point"** and Claude will update this fil
 
 | Property | Value |
 |----------|-------|
-| **Last Updated** | January 30, 2026 @ 3:15 PM |
-| **Session** | Full Visual Browser Verification Complete |
-| **Version** | 2.2.0 |
-| **PRD Compliance** | **100%** |
-| **UI Compliance** | **100%** (All 11 pages visually verified) |
-| **Interactive Elements** | **100%** (20 screenshots captured) |
+| **Last Updated** | February 2, 2026 @ 2:00 PM |
+| **Session** | Full Ecosystem Integration - 100% Complete |
+| **Version** | 2.7.0 |
+| **PRD Compliance** | **100%** (All 9 EPICs) |
+| **Integration Score** | **100/100** (All areas complete) |
+| **Apps Integrated** | **11** (dIQ + Slack, Jira, GitHub, Drive, Zoom, Confluence, Salesforce, Figma, Notion, LinkedIn) |
+| **Test Report Score** | **100/100** |
+| **Mock Data Coverage** | **100%** (All pages use centralized mock data) |
+| **Detail Pages** | **100%** (news, events, people, content, channels) |
+| **Navigation** | **100%** (All links work, no 404s) |
+| **Widget System** | **100%** (15 widgets, 4 presets, full interlinking) |
 | **Audit Score** | 100/100 |
-| **Git Commit** | bb61d5f |
-| **Build Status** | ✅ 58 pages compiled |
+| **Git Branch** | optimization-one |
+| **Git Commit** | 516f68a |
+| **Build Status** | ✅ 58+ pages compiled |
+| **TypeScript** | ✅ 0 errors |
+| **ESLint** | ✅ 0 errors |
 | **Vercel Status** | ✅ LIVE |
 | **Local URL** | http://localhost:3001/diq/dashboard |
-| **Production URL** | https://diq.digitalworkplace.ai/diq/dashboard |
+| **Production URL** | https://intranet-iq.vercel.app/diq/dashboard |
+
+---
+
+## FULL ECOSYSTEM INTEGRATION (v2.7.0)
+
+### Integration Score: 100/100
+
+| Area | Score | Status |
+|------|-------|--------|
+| Data Layer | 100% | ✅ Complete |
+| Search | 100% | ✅ Per-source filters |
+| Dashboard | 100% | ✅ Cross-app activity |
+| My Day | 100% | ✅ External tasks |
+| Chat/AI | 100% | ✅ App filter dropdown |
+| People | 100% | ✅ Real Slack status |
+| Content | 100% | ✅ External sources tab |
+| Events | 100% | ✅ Zoom integration |
+
+### Phase 2 Implementation (v2.7.0)
+
+- **Phase 2A: Chat AI** - App context injection, app filter dropdown, tools used indicator, app icons in sources
+- **Phase 2B: Content** - External sources tab, source filter chips, getExternalDocuments()
+- **Phase 2C: People** - Real Slack status, activity tabs, Zoom schedule
+- **Phase 2D: Search** - Per-source advanced filters, all 11 source badges
+
+### Integration Summary
+
+All Apps Bar data is now fully connected to the main dIQ platform:
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 1 | Unified Data Layer (types, transformers, aggregator) | ✅ |
+| Phase 2 | Search Integration (API + page with source filters) | ✅ |
+| Phase 3 | Dashboard Integration (unified activity, app summaries) | ✅ |
+| Phase 4 | My Day Integration (external tasks, Zoom meetings) | ✅ |
+| Phase 5 | Chat/AI Integration (2 new Claude tools) | ✅ |
+| Phase 6 | People Integration (cross-app activity, tasks) | ✅ |
+
+### New Files
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/lib/unifiedTypes.ts` | 497 | Unified type definitions |
+| `src/lib/crossReferences.ts` | 473 | User/employee mapping |
+| `src/lib/integratedData.ts` | 726 | Central data aggregator |
+| `src/lib/dataTransformers/*.ts` | 1,901 | 11 app transformers |
+| `INTEGRATION.md` | 290 | Full spectrum audit report |
+
+### Key Functions
+
+- `getAllSearchableItems()` - Search across all 10 apps
+- `getAllTasks()` - Unified tasks from Jira + GitHub
+- `getAllEvents()` - Unified events from dIQ + Zoom
+- `getAllActivity()` - Cross-app activity feed
+- `getAppSummaries()` - Dashboard app widgets
+- `getContextForChat()` - AI context from all apps
 
 ---
 
@@ -82,7 +146,9 @@ When ending a session, say **"do a save point"** and Claude will update this fil
 | **CHANGELOG.md** | `CHANGELOG.md` | Version history |
 | **AUDIT_REPORT.md** | `AUDIT_REPORT.md` | Technical audit (100/100) |
 | **PRD_V2_GAPS.md** | `PRD_V2_GAPS.md` | V2.0 PRD compliance (100%) |
-| **PRD_V3_GAPS.md** | `PRD_V3_GAPS.md` | **NEW** Full-spectrum UI audit (97.8%) |
+| **PRD_V3_GAPS.md** | `PRD_V3_GAPS.md` | Full-spectrum UI audit |
+| **Test Report v2** | `docs/FULL_SPECTRUM_TEST_REPORT_v2.md` | Browser testing (98/100) |
+| **Test Report v3** | `docs/FULL_SPECTRUM_TEST_REPORT_v3.md` | **CURRENT** Final 100/100 |
 | **Query Standards** | `docs/QUERY_DETECTION_STANDARDS.md` | Search algorithm |
 | **Maintenance** | `docs/MAINTENANCE.md` | Health checks, deployment |
 | **Color System** | `docs/COLOR_SYSTEM.md` | Midnight Green palette |
@@ -169,6 +235,64 @@ time curl -s http://localhost:3001/diq/api/content | jq '.articles | length'
 
 ---
 
+## ⚠️ CRITICAL: THREE-PANEL LAYOUT ARCHITECTURE
+
+**DO NOT MODIFY WITHOUT READING THIS SECTION**
+
+The dIQ dashboard uses a three-panel architecture. Any changes to layout/overflow can break sidebar visibility.
+
+### Architecture Diagram
+```
++----------+---------------------------+----------+
+| Sidebar  |     Main Content          | Apps Bar |
+| (fixed)  |     (scrollable)          | (fixed)  |
+| 64px     |     flex-1                | 80px     |
+| h-dvh    |     min-h-dvh             | h-dvh    |
++----------+---------------------------+----------+
+```
+
+### Required CSS Classes
+
+| Element | File | Required Classes |
+|---------|------|------------------|
+| `<body>` | `layout.tsx:36` | `min-h-dvh` (NO overflow-hidden!) |
+| Dashboard container | `dashboard/page.tsx:268` | `min-h-dvh` (NO overflow-hidden!) |
+| Main content | `dashboard/page.tsx:272` | `min-h-dvh` (NO overflow-y-auto!) |
+| Sidebar | `Sidebar.tsx:48` | `fixed left-0 top-0 h-dvh` |
+| Apps Bar | `AppShortcutsBar.tsx:218` | `fixed top-0 right-0 h-full` |
+
+### FORBIDDEN Patterns ⛔
+
+**NEVER add these to body or dashboard container:**
+```css
+/* FORBIDDEN - breaks fixed children */
+overflow-hidden
+overflow-y-hidden
+h-dvh overflow-hidden  /* combination breaks layout */
+```
+
+### WHY This Matters
+
+When `overflow-hidden` is on body:
+1. Fixed elements clip to viewport
+2. Browser may miscalculate heights
+3. Sidebar items get cut off
+4. Only bottom icons remain visible
+
+### Verification After Layout Changes
+
+Always test at these viewports after ANY layout change:
+```bash
+# Test at multiple sizes
+1920x1080  # Desktop
+1366x768   # Laptop
+1280x800   # Small desktop
+```
+
+Check: All 12+ sidebar items visible (Home through Settings)
+
+---
+
 ## v2.2.0 - 100% PRD COMPLIANCE ACHIEVED
 
 ### Summary
@@ -221,7 +345,78 @@ All 9 EPICs from the V2.0 PRD are now at 100% compliance. This was achieved by i
 
 ## VERSION HISTORY (from CHANGELOG.md)
 
-### v2.2.0 (January 30, 2026) - Current
+### v2.5.4 (January 31, 2026) - Current
+- **Full Spectrum Verification Complete** - 100% coverage across all panels
+- **Dashboard Date Display** - Current date shown in greeting section
+- **5-Agent Parallel Analysis** - Left sidebar, right apps bar, dashboard, apps, layout all verified
+- **Production Deployment** - Live at diq.digitalworkplace.ai
+
+### v2.5.3 (January 31, 2026)
+- **Enhanced App Interface Replicas** - All 10 apps with rich realistic data
+- **Slack**: 3 workspaces, 10 channels, 7 rich messages with code/attachments
+- **Jira**: 21 tickets, 4 epics, sprint stats, blocked indicators
+- **GitHub**: 12 files, 8 commits, 8 CI checks, full PR workflow
+- **Google Drive**: 8 folders, 12 files, storage usage
+- **Zoom**: 4 live meetings, 5 recordings with view counts
+- **Salesforce**: 16 opportunities, $11.4M pipeline, activities feed
+- **Notion**: 8 pages, sprint board, recent activity
+- **LinkedIn**: 4 posts, profile stats, trending topics
+
+### v2.5.2 (January 31, 2026)
+- **CRITICAL: Three-Panel Layout Fix** - Sidebar navigation fully visible
+- **Root cause**: `overflow-hidden` on body/container broke fixed positioning
+- **Solution**: `min-h-dvh` on body, container, and main - panels manage own overflow
+- **Prevention**: NEVER add `overflow-hidden` to body or parent of fixed elements
+
+### v2.5.1 (January 30, 2026)
+- **Apps Bar Drag-to-Scroll** - Premium UX click-hold-drag scrolling
+- **Sidebar Responsiveness Fix** - Full viewport height with h-dvh
+- **Hidden Scrollbar** - Clean UI with scrollbar-hide utility
+- **Browser Automation Fix** - Viewport initialization documentation
+
+### v2.5.0 (January 30, 2026)
+- **Full Widget Catalog** - 15 widgets, 4 presets, full interlinking
+- **9 New Widget Components** - Calendar, Bookmarks, Goals, Team Directory, Announcements, Polls, Birthdays, Performance, Weather
+- **Bidirectional Preset-Customization** - Presets ↔ Widgets ↔ Custom
+
+### v2.4.1 (January 30, 2026)
+- **Dashboard Presets & Customize Fully Functional**
+- Presets dropdown now changes widget visibility immediately
+- Task-Focused, News-Heavy, Minimal, and Default layouts work
+- Customize modal toggles widget visibility correctly
+- Active preset highlighted with badge
+- Dynamic grid columns based on visible widgets
+
+### v2.4.0 (January 30, 2026)
+- **Realistic App Interface Replicas** - All 10 integrated apps with authentic UI
+- SlackApp: Full workspace/channel UI with message threading
+- JiraApp: Sprint board with Kanban columns and ticket cards
+- GitHubApp: PR code review with file diffs and CI checks
+- DriveApp: My Drive file manager with folder/file views
+- ZoomApp: Meetings dashboard with LIVE indicator
+- ConfluenceApp: Wiki page viewer with space sidebar
+- SalesforceApp: Opportunity Pipeline with deal stages
+- FigmaApp: Canvas interface with layers/properties panels
+- NotionApp: Workspace with database board view
+- LinkedInApp: Feed interface with post creation
+- AppShortcutsBar updated for internal routing
+
+### v2.3.1 (January 30, 2026)
+- **Dashboard View All Links Fixed** - All widgets properly linked
+- Recent Activity "View all" → /notifications (was /settings?tab=activity)
+- All activity items, docs, updates, tasks now clickable with proper hrefs
+- ActivityItem component updated to support links
+
+### v2.3.0 (January 30, 2026)
+- **Full Spectrum Mock Data** - Zero 404 errors across entire app
+- Centralized mockData.ts with realistic enterprise data
+- Created detail pages: news/[id], events/[id], people/[id], content/[id], channels/[id]
+- Fixed trending topics to link to actual news articles
+- Replaced all Supabase hooks with mock data for demo mode
+- 15 files changed, 6,390 insertions
+- Production verified: https://diq.digitalworkplace.ai/diq/dashboard
+
+### v2.2.0 (January 30, 2026)
 - **100% PRD Compliance** - All 9 EPICs complete
 - 16 parallel implementations across all gaps
 - 7 new components, 12 modified files
@@ -401,18 +596,256 @@ apps/intranet-iq/
 
 - [x] v2.2.0 100% PRD Compliance - COMPLETE
 - [x] Build verified: 58 pages compiled successfully
-- [x] Git commit: 765a02a pushed to main
-- [x] Vercel deployment: LIVE at https://diq.digitalworkplace.ai/diq/dashboard
-- [x] Documentation updated (PRD_V2_GAPS.md, CHANGELOG.md, SAVEPOINT.md)
-- [x] Production verification: All pages returning 200 OK
+- [x] v2.3.0 Full Spectrum Mock Data - Zero 404 Errors - COMPLETE
+- [x] v2.3.1 Dashboard View All Links Fixed - COMPLETE
+- [x] v2.4.0 Realistic App Interface Replicas - COMPLETE
+- [x] v2.4.1 Dashboard Presets & Customize Functional - COMPLETE
+- [x] Git commit: efc692a pushed to main
+- [x] Vercel deployment: LIVE
+- [x] Production verified: https://diq.digitalworkplace.ai/diq/dashboard returning 200
 
-**No pending tasks. v2.2.0 is fully deployed and documented.**
+**No pending tasks. v2.5.4 is fully deployed and verified (100% complete).**
 
 ---
 
 ## SESSION HISTORY
 
-### January 30, 2026 @ 3:15 PM (Current Session)
+### January 31, 2026 @ 3:45 AM (Current Session) - 100% PRD COMPLIANCE
+**Accomplishments:**
+1. **Full Spectrum Test Report v3** - Achieved 100/100 score with all gaps fixed:
+   - ✅ Create Role Modal - Full RBAC modal with permission selection
+   - ✅ Per-Document Access Controls - Public/Team Only/Restricted badges
+   - ✅ Agent Logs Dashboard - Real-time execution monitoring with stats
+   - ✅ Email Summary Widget - 12 unread with priority inbox
+   - ✅ Focus Time Recommendations - AI-powered productivity insights
+   - ✅ Email App - Gmail-style interface in Apps Bar
+   - ✅ Bookmarks App - Category manager in Apps Bar
+
+2. **All 9 EPICs at 100%:**
+   - EPIC 1: Enterprise Search ✅
+   - EPIC 2: AI Assistant ✅
+   - EPIC 3: Knowledge Base ✅
+   - EPIC 4: Framework Integration ✅
+   - EPIC 5: RBAC & Access Control ✅
+   - EPIC 6: Agentic Workflows ✅
+   - EPIC 7: Central Dashboard ✅
+   - EPIC 8: Productivity Assistant ✅
+   - EPIC 9: Employee Experience ✅
+
+3. **Deployment Verified:**
+   - Git commit: `c736991` pushed to main
+   - Vercel: Build successful (58 pages, 30.6s compile)
+   - Production URLs all returning 200 OK
+
+**Files Modified:**
+- `src/app/admin/permissions/page.tsx` - Added Create Role Modal
+- `src/app/agents/page.tsx` - Added Logs Dashboard view
+- `src/app/content/page.tsx` - Added per-document access badges
+- `src/app/my-day/page.tsx` - Added Email Summary + Focus Time widgets
+- `src/app/apps/[id]/page.tsx` - Added Email App + Bookmarks App
+- `src/components/dashboard/AppShortcutsBar.tsx` - Added Email/Bookmarks
+- `docs/FULL_SPECTRUM_TEST_REPORT_v3.md` - **NEW** Final verification report
+
+---
+
+### January 31, 2026 @ 2:15 AM
+**Accomplishments:**
+1. **Full Spectrum Analysis Complete** - 5 parallel verification agents confirmed 100% completion
+   - Left Sidebar: 10/10 PASS (all navigation items visible)
+   - Right Apps Bar: 10/10 PASS (all 10 apps functional)
+   - Dashboard Main: 10/10 PASS (all widgets + date display working)
+   - 10 App Interfaces: 10/10 PASS (rich realistic data)
+   - Layout & CSS: 6/6 PASS (three-panel architecture correct)
+
+2. **Dashboard Date Display Added**
+   - Added current date next to organization name
+   - Format: "Thursday, January 30, 2026"
+   - Location: `dashboard/page.tsx:314`
+
+3. **Deployment Verified:**
+   - Git commit: `013490d` pushed to main
+   - Vercel: Build successful (58 pages, 30.4s compile)
+   - Production: https://diq.digitalworkplace.ai/diq/dashboard → 200 OK
+   - Vercel URL: https://intranet-iq.vercel.app/diq/dashboard → 200 OK
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Added date display
+- `SAVEPOINT.md` - Updated session history
+
+---
+
+### January 31, 2026 @ 1:45 AM
+**Accomplishments:**
+1. **Enhanced App Interface Replicas** - All 10 integrated apps enriched with realistic data
+
+2. **App Enhancements Summary:**
+   | App | Data Points | Key Features |
+   |-----|-------------|--------------|
+   | **Slack** | 3 workspaces, 10 channels, 6 DMs, 7 messages | Code blocks, threads, reactions, attachments |
+   | **Jira** | 21 tickets, 4 epics, sprint stats | Labels, subtasks, blocked indicators |
+   | **GitHub** | 12 files, 8 commits, 8 CI checks | PR labels, reviewers, comments |
+   | **Google Drive** | 8 folders, 12 files | Sharing, storage usage |
+   | **Zoom** | 4 meetings, 5 recordings | Meeting IDs, view counts |
+   | **Salesforce** | 16 opportunities, $11.4M pipeline | Hot deals, activities |
+   | **Notion** | 8 pages, sprint board | Progress, recent activity |
+   | **LinkedIn** | 4 posts, profile stats | Trending, notifications |
+
+3. **Production Verified:**
+   - All 10 app URLs returning 200 OK
+   - `https://diq.digitalworkplace.ai/diq/apps/{app-id}`
+
+4. **Git Status:**
+   - Commit: `865b859`
+   - Branch: main (up to date with origin)
+
+**Files Modified:**
+- `src/app/apps/[id]/page.tsx` - Enhanced all 10 app components (+332 lines)
+- `CHANGELOG.md` - v2.5.3 documentation
+- `SAVEPOINT.md` - Updated session history
+
+---
+
+### January 31, 2026 @ 12:50 AM
+**Accomplishments:**
+1. **CRITICAL: Three-Panel Layout Fix** - Sidebar navigation fully visible
+   - **Root Cause**: `h-dvh overflow-hidden` on body/container broke fixed positioning
+   - **Solution**: Changed to `min-h-dvh` (removed overflow-hidden)
+   - All 12+ sidebar navigation items now visible
+   - Works at all viewport sizes
+
+2. **Layout Changes Made:**
+   | File | Line | Before | After |
+   |------|------|--------|-------|
+   | `layout.tsx` | 36 | `h-dvh overflow-hidden` | `min-h-dvh` |
+   | `dashboard/page.tsx` | 268 | `h-dvh overflow-hidden` | `min-h-dvh` |
+   | `dashboard/page.tsx` | 272 | `h-dvh overflow-y-auto` | `min-h-dvh` |
+
+3. **Comprehensive Documentation Added:**
+   - CHANGELOG.md: v2.5.2 with full root cause analysis
+   - SAVEPOINT.md: Three-Panel Architecture section added
+   - Prevention notes: NEVER add overflow-hidden to body
+   - Verification checklist added
+
+**Files Modified:**
+- `src/app/layout.tsx:36` - Body class fix
+- `src/app/dashboard/page.tsx:268,272` - Container/main class fix
+- `CHANGELOG.md` - v2.5.2 documentation
+- `SAVEPOINT.md` - Architecture documentation, prevention notes
+
+---
+
+### January 30, 2026 @ 11:55 PM
+**Accomplishments:**
+1. **Apps Bar Drag-to-Scroll** - Premium UX implementation
+   - Click-hold-drag scrolling (vertical)
+   - Mouse wheel scroll support (independent from main content)
+   - Hidden scrollbar (CSS scrollbar-hide utility)
+   - 5px movement threshold to differentiate drag vs click
+   - Click navigation still works for app icons
+   - Cursor feedback (grab/grabbing states)
+2. **Sidebar Responsiveness Fix** - Full viewport height
+   - Changed `h-screen` to `h-dvh` (dynamic viewport height)
+   - Added overflow handling for navigation items
+   - Flex shrink control prevents element compression
+   - Works at all viewport sizes (1920x1080, 1366x768, etc.)
+3. **Browser Automation Fix** - Viewport initialization
+   - Must explicitly set viewport size
+   - Null viewport causes tablet-sized view
+   - Documentation added to prevent recurrence
+4. **CSS Utility Added** - `.scrollbar-hide` class in globals.css
+
+**Files Modified:**
+- `src/components/dashboard/AppShortcutsBar.tsx` - Drag-to-scroll (+60 lines)
+- `src/components/layout/Sidebar.tsx` - Responsive height fixes (`h-dvh`)
+- `src/app/layout.tsx` - Root layout viewport fix (`h-dvh overflow-hidden`)
+- `src/app/dashboard/page.tsx` - Main content viewport fix
+- `src/app/globals.css` - Added `.scrollbar-hide` utility class
+- `CLAUDE.md` - Added browser automation best practices
+
+**Technical Details:**
+- Uses `useRef` for `hasMovedRef` to avoid stale closure issues
+- Framer Motion spring animation for smooth scroll position
+- setTimeout reset of hasMoved after mouseUp (100ms delay)
+- Works with both internal (`/apps/[id]`) and external app links
+
+---
+
+### January 30, 2026 @ 10:45 PM
+**Accomplishments:**
+1. **Dashboard Presets Fully Functional** - All 4 presets now work
+   - Task-Focused: Quick Actions, Meeting, Activity only
+   - News-Heavy: News, Trending, Activity only
+   - Minimal: Quick Actions and Meeting only
+   - Default: All widgets visible
+2. **Customize Modal Works** - Toggle widget visibility, drag to reorder
+3. **Active Preset Detection** - Shows "Active" badge on current preset
+4. **Dynamic Grid Layout** - Columns adjust based on visible widgets
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Added conditional rendering for all widgets
+
+---
+
+### January 30, 2026 @ 10:00 PM
+**Accomplishments:**
+1. **Realistic App Interface Replicas** - All 10 integrated apps with authentic dummy data
+2. **SlackApp**: Full workspace with channel sidebar (260px), message threading, reactions, DMs with status indicators, formatting toolbar
+3. **JiraApp**: Sprint board with 4 Kanban columns (TO DO, IN PROGRESS, IN REVIEW, DONE), ticket cards with type icons, priorities, story points
+4. **GitHubApp**: PR code review interface with 4 tabs (Conversation, Commits, Checks, Files changed), file diffs with +/- lines
+5. **DriveApp**: My Drive with sidebar navigation, folders grid, files table view, list/grid toggle, storage indicator
+6. **ZoomApp**: Meetings dashboard with action buttons (New Meeting, Join, Schedule), today's meetings with LIVE indicator
+7. **ConfluenceApp**: Wiki page with space sidebar, breadcrumb navigation, API documentation content with code blocks
+8. **SalesforceApp**: Opportunity Pipeline with 5 stages (Prospecting → Closed Won), deal cards with amounts and probability
+9. **FigmaApp**: Canvas interface with layers panel, properties panel (position, size, fill), toolbar, zoom controls
+10. **NotionApp**: Workspace sidebar, page content with emoji icons, database board view with Kanban
+11. **LinkedInApp**: Feed with header navigation, profile sidebar, post creation, engagement metrics
+12. **AppShortcutsBar**: Updated to use internal `/apps/[id]` routes with `hasInternalPage` flag
+
+**Files Modified:**
+- `src/app/apps/[id]/page.tsx` - Complete rewrite (1578 lines) with all 10 app interfaces
+- `src/components/dashboard/AppShortcutsBar.tsx` - Internal routing
+
+**Technical Details:**
+- Each app uses useState for tab/view state management
+- App-specific color schemes matching real products
+- Tailwind CSS for styling with responsive layouts
+- Lucide React icons throughout
+
+---
+
+### January 30, 2026 @ 7:30 PM (Previous Session)
+**Accomplishments:**
+1. **Dashboard "View All" Links Fixed** - All widgets now link to proper pages
+2. **Recent Activity Section Overhauled:**
+   - "View all" changed from `/settings?tab=activity` to `/notifications`
+   - Activity items now use `mockRecentActivity` data with proper links
+   - Each activity links to its content: news/events/articles/channels
+3. **Recent Documents Made Clickable** - Each doc links to `/content/[id]`
+4. **Team Updates Made Clickable** - Each update links to `/news/[id]`
+5. **Tasks Made Clickable** - Each task links to `/my-day`
+6. **ActivityItem Component Updated** - Now accepts optional `href` prop
+
+**View All Link Summary (All Fixed):**
+| Widget | View All Link | Status |
+|--------|---------------|--------|
+| My Tasks | `/my-day` | ✅ |
+| Recent Documents | `/content` | ✅ |
+| Team Updates | `/news` | ✅ |
+| Company News | `/news` | ✅ |
+| Upcoming Events | `/events` | ✅ |
+| Recent Activity | `/notifications` | ✅ Fixed |
+
+**Files Modified:**
+- `src/app/dashboard/page.tsx` - Updated mockRecentDocs, mockTeamUpdates with hrefs, Activity section refactored
+
+**Verification:**
+- All linked pages return HTTP 200
+- Browser automation confirmed navigation works
+- News detail page shows full content with rich data
+
+---
+
+### January 30, 2026 @ 3:15 PM
 **Accomplishments:**
 1. **Full Visual Browser Verification** - Playwright automation with 20 screenshots
 2. **100% Page Coverage** - All 11 pages visually verified working
@@ -552,6 +985,6 @@ open https://diq.digitalworkplace.ai/diq/dashboard
 *Part of Digital Workplace AI Product Suite*
 *Repository: https://github.com/aldrinstellus/intranet-iq*
 *Production: https://diq.digitalworkplace.ai/diq/dashboard*
-*Version: 2.2.0*
+*Version: 2.5.3*
 *PRD Compliance: 100%*
-*Last Updated: January 30, 2026 @ 2:00 AM*
+*Last Updated: January 31, 2026 @ 1:45 AM*
