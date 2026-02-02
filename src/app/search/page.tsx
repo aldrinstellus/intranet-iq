@@ -351,8 +351,8 @@ function SearchPageInner() {
     const queryLower = query.toLowerCase();
     const filtered = mockSearchResults.filter(result =>
       result.title.toLowerCase().includes(queryLower) ||
-      result.description.toLowerCase().includes(queryLower) ||
-      result.highlights.some(h => h.toLowerCase().includes(queryLower))
+      (result.description?.toLowerCase().includes(queryLower) ?? false) ||
+      (result.highlights?.some((h: string) => h.toLowerCase().includes(queryLower)) ?? false)
     );
     setResults(filtered);
 

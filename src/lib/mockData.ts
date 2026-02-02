@@ -1059,12 +1059,13 @@ export interface MockArticle {
   slug: string;
   content: string;
   excerpt: string;
+  summary?: string;
   category_id: string;
   category_name: string;
   author_id: string;
   author_name: string;
   author_avatar: string;
-  status: 'published' | 'draft' | 'archived';
+  status: 'published' | 'draft' | 'archived' | 'pending_review';
   published_at: string;
   updated_at: string;
   tags: string[];
@@ -1435,3 +1436,160 @@ export function getArticleById(id: string): MockArticle | undefined {
 export function getChannelById(id: string): MockChannel | undefined {
   return mockChannels.find(channel => channel.id === id);
 }
+
+// =============================================================================
+// KB CATEGORIES
+// =============================================================================
+
+export interface MockKBCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  parent_id: string | null;
+  department_id?: string | null;
+  article_count: number;
+  icon?: string;
+}
+
+export const mockKBCategories: MockKBCategory[] = [
+  { id: "cat-001", name: "Getting Started", slug: "getting-started", description: "Onboarding and basics", parent_id: null, article_count: 12, icon: "rocket" },
+  { id: "cat-002", name: "IT & Security", slug: "it-security", description: "IT policies and security guidelines", parent_id: null, article_count: 18, icon: "shield" },
+  { id: "cat-003", name: "HR Policies", slug: "hr-policies", description: "Human resources policies and procedures", parent_id: null, article_count: 24, icon: "users" },
+  { id: "cat-004", name: "Engineering", slug: "engineering", description: "Technical documentation and standards", parent_id: null, article_count: 45, icon: "code" },
+  { id: "cat-005", name: "Product", slug: "product", description: "Product guides and documentation", parent_id: null, article_count: 32, icon: "box" },
+  { id: "cat-006", name: "Sales & Marketing", slug: "sales-marketing", description: "Sales playbooks and marketing resources", parent_id: null, article_count: 28, icon: "trending-up" },
+  { id: "cat-007", name: "Finance", slug: "finance", description: "Financial policies and procedures", parent_id: null, article_count: 15, icon: "dollar-sign" },
+  { id: "cat-008", name: "Legal", slug: "legal", description: "Legal guidelines and compliance", parent_id: null, article_count: 10, icon: "scale" },
+];
+
+export function getKBCategoryById(id: string): MockKBCategory | undefined {
+  return mockKBCategories.find(cat => cat.id === id);
+}
+
+// =============================================================================
+// DEPARTMENTS
+// =============================================================================
+
+export interface MockDepartment {
+  id: string;
+  name: string;
+  description: string;
+  manager_id: string;
+  manager_name: string;
+  employee_count: number;
+  parent_id: string | null;
+}
+
+export const mockDepartments: MockDepartment[] = [
+  { id: "dept-exec", name: "Executive Team", description: "Company leadership", manager_id: "1", manager_name: "Sarah Chen", employee_count: 5, parent_id: null },
+  { id: "dept-eng", name: "Engineering", description: "Product development and infrastructure", manager_id: "2", manager_name: "Marcus Johnson", employee_count: 38, parent_id: null },
+  { id: "dept-product", name: "Product", description: "Product management and design", manager_id: "5", manager_name: "Emily Rodriguez", employee_count: 12, parent_id: null },
+  { id: "dept-sales", name: "Sales", description: "Revenue and business development", manager_id: "8", manager_name: "David Kim", employee_count: 22, parent_id: null },
+  { id: "dept-marketing", name: "Marketing", description: "Brand and growth", manager_id: "11", manager_name: "Jessica Taylor", employee_count: 15, parent_id: null },
+  { id: "dept-hr", name: "Human Resources", description: "People operations", manager_id: "14", manager_name: "Robert Williams", employee_count: 8, parent_id: null },
+  { id: "dept-finance", name: "Finance", description: "Financial operations", manager_id: "17", manager_name: "Amanda Chen", employee_count: 10, parent_id: null },
+  { id: "dept-legal", name: "Legal", description: "Legal and compliance", manager_id: "20", manager_name: "Michael Brown", employee_count: 6, parent_id: null },
+  { id: "dept-it", name: "IT Operations", description: "Infrastructure and support", manager_id: "23", manager_name: "Chris Anderson", employee_count: 12, parent_id: null },
+  { id: "dept-cs", name: "Customer Success", description: "Customer support and success", manager_id: "26", manager_name: "Lisa Martinez", employee_count: 18, parent_id: null },
+];
+
+export function getDepartmentById(id: string): MockDepartment | undefined {
+  return mockDepartments.find(dept => dept.id === id);
+}
+
+// =============================================================================
+// SEARCH RESULTS
+// =============================================================================
+
+export interface MockSearchResult {
+  id: string;
+  title: string;
+  excerpt: string;
+  description?: string;
+  highlights?: string[];
+  type: 'article' | 'news' | 'event' | 'employee' | 'channel';
+  source: string;
+  url: string;
+  relevance: number;
+  author?: string;
+  date?: string;
+  tags?: string[];
+}
+
+export const mockSearchResults: MockSearchResult[] = [
+  { id: "sr-1", title: "Getting Started with Digital Workplace AI", excerpt: "Complete guide to getting started with the platform...", type: "article", source: "Knowledge Base", url: "/diq/content/1", relevance: 0.95, author: "Sarah Chen", tags: ["onboarding", "guide"] },
+  { id: "sr-2", title: "IT Security Guidelines", excerpt: "Security best practices and policies for all employees...", type: "article", source: "Knowledge Base", url: "/diq/content/2", relevance: 0.88, author: "Marcus Johnson", tags: ["security", "IT"] },
+  { id: "sr-3", title: "Q4 2025 Results Announcement", excerpt: "Record-breaking quarterly results with 35% YoY growth...", type: "news", source: "News", url: "/diq/news/1", relevance: 0.82, author: "Sarah Chen", date: "2026-01-28" },
+  { id: "sr-4", title: "Annual Company Retreat 2026", excerpt: "Join us for the annual company retreat in Lake Tahoe...", type: "event", source: "Events", url: "/diq/events/1", relevance: 0.75, date: "2026-03-15" },
+  { id: "sr-5", title: "Marcus Johnson", excerpt: "VP of Engineering, leading the platform development team...", type: "employee", source: "People", url: "/diq/people/2", relevance: 0.70 },
+];
+
+// =============================================================================
+// CHAT THREADS & MESSAGES
+// =============================================================================
+
+export interface MockChatThread {
+  id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  model: string;
+  parent_thread_id: string | null;
+  branch_point_message_id: string | null;
+  preview: string;
+}
+
+export interface MockChatMessage {
+  id: string;
+  thread_id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+  sources?: { id: string; title: string; type: string; url?: string }[];
+}
+
+export const mockChatThreads: MockChatThread[] = [
+  { id: "thread-1", title: "Help with onboarding process", created_at: "2026-01-30T10:00:00Z", updated_at: "2026-01-30T10:15:00Z", message_count: 4, model: "claude-sonnet-4-20250514", parent_thread_id: null, branch_point_message_id: null, preview: "How do I complete my onboarding checklist?" },
+  { id: "thread-2", title: "PTO policy questions", created_at: "2026-01-29T14:30:00Z", updated_at: "2026-01-29T14:45:00Z", message_count: 6, model: "claude-sonnet-4-20250514", parent_thread_id: null, branch_point_message_id: null, preview: "What is our PTO policy?" },
+  { id: "thread-3", title: "IT security requirements", created_at: "2026-01-28T09:00:00Z", updated_at: "2026-01-28T09:30:00Z", message_count: 8, model: "claude-sonnet-4-20250514", parent_thread_id: null, branch_point_message_id: null, preview: "What are the security requirements for remote access?" },
+];
+
+export const mockChatMessages: MockChatMessage[] = [
+  { id: "msg-1", thread_id: "thread-1", role: "user", content: "How do I complete my onboarding checklist?", created_at: "2026-01-30T10:00:00Z" },
+  { id: "msg-2", thread_id: "thread-1", role: "assistant", content: "I can help you with that! Your onboarding checklist includes several key steps:\n\n1. **Complete your profile** - Add your photo, bio, and contact information\n2. **Set up 2FA** - Enable two-factor authentication for security\n3. **Join team channels** - Connect with your team on Slack\n4. **Review policies** - Read through the employee handbook\n\nWould you like me to guide you through any of these steps?", created_at: "2026-01-30T10:01:00Z", sources: [{ id: "1", title: "Getting Started Guide", type: "article", url: "/diq/content/1" }] },
+  { id: "msg-3", thread_id: "thread-2", role: "user", content: "What is our PTO policy?", created_at: "2026-01-29T14:30:00Z" },
+  { id: "msg-4", thread_id: "thread-2", role: "assistant", content: "Our PTO policy provides generous time off benefits:\n\n- **Vacation**: 20 days per year for all full-time employees\n- **Sick Leave**: 10 days per year\n- **Personal Days**: 3 days per year\n- **Holidays**: 12 company-observed holidays\n\nPTO accrues monthly and can be carried over up to 5 days. For detailed information, please refer to the HR Policies section.", created_at: "2026-01-29T14:31:00Z", sources: [{ id: "3", title: "PTO Policy", type: "article", url: "/diq/content/3" }] },
+];
+
+export function getChatThreadById(id: string): MockChatThread | undefined {
+  return mockChatThreads.find(thread => thread.id === id);
+}
+
+export function getMessagesForThread(threadId: string): MockChatMessage[] {
+  return mockChatMessages.filter(msg => msg.thread_id === threadId);
+}
+
+// =============================================================================
+// RECENT ACTIVITY
+// =============================================================================
+
+export interface MockRecentActivity {
+  id: string;
+  type: 'article_published' | 'news_posted' | 'event_created' | 'employee_joined' | 'comment_added';
+  title: string;
+  description: string;
+  user_name: string;
+  user_avatar: string;
+  timestamp: string;
+  url?: string;
+}
+
+export const mockRecentActivity: MockRecentActivity[] = [
+  { id: "act-1", type: "article_published", title: "New article published", description: "Getting Started with AI Workflows", user_name: "Sarah Chen", user_avatar: "SC", timestamp: "2026-01-30T15:30:00Z", url: "/diq/content/5" },
+  { id: "act-2", type: "news_posted", title: "Company announcement", description: "Q4 2025 Results Released", user_name: "Marketing Team", user_avatar: "MT", timestamp: "2026-01-28T09:00:00Z", url: "/diq/news/1" },
+  { id: "act-3", type: "event_created", title: "New event scheduled", description: "Team Retrospective - Q1 Planning", user_name: "Emily Rodriguez", user_avatar: "ER", timestamp: "2026-01-27T14:00:00Z", url: "/diq/events/3" },
+  { id: "act-4", type: "employee_joined", title: "New team member", description: "Alex Thompson joined Engineering", user_name: "HR Team", user_avatar: "HR", timestamp: "2026-01-26T10:00:00Z", url: "/diq/people/42" },
+  { id: "act-5", type: "comment_added", title: "New comment", description: "Discussion on IT Security Guidelines", user_name: "Marcus Johnson", user_avatar: "MJ", timestamp: "2026-01-25T16:45:00Z", url: "/diq/content/2" },
+];
