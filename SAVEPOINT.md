@@ -20,9 +20,9 @@ When ending a session, say **"do a save point"** and Claude will update this fil
 
 | Property | Value |
 |----------|-------|
-| **Last Updated** | February 2, 2026 @ 4:30 PM |
-| **Session** | Full Ecosystem Integration - 100% Complete & LIVE |
-| **Version** | 2.7.0 |
+| **Last Updated** | February 2, 2026 @ 11:30 PM |
+| **Session** | Apps Bar Scroll Enhancement - v2.7.1 |
+| **Version** | 2.7.1 |
 | **PRD Compliance** | **100%** (All 9 EPICs) |
 | **Integration Score** | **100/100** (All areas complete) |
 | **Apps Integrated** | **11** (dIQ + Slack, Jira, GitHub, Drive, Zoom, Confluence, Salesforce, Figma, Notion, LinkedIn) |
@@ -613,6 +613,33 @@ apps/intranet-iq/
 
 ## SESSION HISTORY
 
+### February 2, 2026 @ 11:30 PM - Apps Bar Scroll Enhancement (v2.7.1)
+
+**Accomplishments:**
+1. **Apps Bar Mouse Wheel Scroll** - Added wheel event handler for scrolling with mouse wheel
+2. **Apps Bar Drag-to-Scroll** - Added click-hold-drag scrolling functionality
+3. **Click Protection** - Prevents accidental navigation when user was dragging
+4. **Cursor Feedback** - Shows grab/grabbing cursor states
+
+**Files Modified:**
+- `src/components/dashboard/AppShortcutsBar.tsx` - Added scroll handlers (+70 lines)
+- `CHANGELOG.md` - Added v2.7.1 entry
+- `SAVEPOINT.md` - Updated session history
+
+**Technical Implementation:**
+- `useRef` for container reference and hasMoved tracking
+- `useCallback` for memoized event handlers
+- Wheel events with `{ passive: false }` for preventDefault
+- 5px movement threshold for drag detection
+- Spring animation maintained for smooth scrolling
+
+**Verification:**
+- Mouse wheel scroll tested and working (scroll indicator shows position change)
+- Drag-to-scroll tested and working
+- Main page scroll unaffected (works independently)
+
+---
+
 ### January 31, 2026 @ 3:45 AM (Current Session) - 100% PRD COMPLIANCE
 **Accomplishments:**
 1. **Full Spectrum Test Report v3** - Achieved 100/100 score with all gaps fixed:
@@ -988,6 +1015,6 @@ open https://diq.digitalworkplace.ai/diq/dashboard
 *Part of Digital Workplace AI Product Suite*
 *Repository: https://github.com/aldrinstellus/intranet-iq*
 *Production: https://diq.digitalworkplace.ai/diq/dashboard*
-*Version: 2.5.3*
+*Version: 2.7.1*
 *PRD Compliance: 100%*
-*Last Updated: January 31, 2026 @ 1:45 AM*
+*Last Updated: February 2, 2026 @ 11:30 PM*

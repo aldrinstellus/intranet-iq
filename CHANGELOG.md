@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.7.1] - 2026-02-02
+
+### Apps Bar Scroll Enhancement
+
+Added mouse wheel scroll and drag-to-scroll functionality to the Apps Bar on the right side of the dashboard.
+
+#### Features Added
+
+| Feature | Description |
+|---------|-------------|
+| **Mouse Wheel Scroll** | Scroll up/down with mouse wheel while hovering over Apps Bar |
+| **Drag-to-Scroll** | Click and drag vertically to scroll through apps |
+| **Cursor Feedback** | Shows grab/grabbing cursor states during interaction |
+| **Click Protection** | Prevents accidental navigation when dragging |
+
+#### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/dashboard/AppShortcutsBar.tsx` | Added useRef, useCallback hooks; wheel event handler; drag handlers; container ref and mouse events |
+
+#### Technical Details
+
+- Wheel events captured with `{ passive: false }` to allow `preventDefault()`
+- Drag threshold of 5px to differentiate drag from click
+- Spring animation for smooth scroll transitions
+- `hasMovedRef` prevents click navigation after drag
+
+---
+
 ## [2.7.0] - 2026-02-02
 
 ### Full Ecosystem Integration - 100% Complete
